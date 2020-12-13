@@ -305,7 +305,7 @@ namespace sndisplay
 	  if (draw_omid) // if (((mw_column % 5) == 0) || (mw_column == 19))
 	    omid_text_v[id]->Draw();
 	  if (draw_omnum) omnum_text_v[id]->Draw();
-	  if (draw_content) content_text_v[id]->Draw();
+	  if (draw_content && content[id]!=0) content_text_v[id]->Draw();
 	  // else if (draw_omid_num) omid_num_text_v[id]->Draw();
 	}
       }
@@ -319,7 +319,7 @@ namespace sndisplay
 	    if (draw_omid) // if ((xw_column % 5) == 0)
 	      omid_text_v[id]->Draw();
 	    if (draw_omnum) omnum_text_v[id]->Draw();
-	    if (draw_content) content_text_v[id]->Draw();
+	    if (draw_content && content[id]!=0) content_text_v[id]->Draw();
 	    // else if (draw_omid_num) omid_num_text_v[id]->Draw();
 	  }
 	}
@@ -333,7 +333,7 @@ namespace sndisplay
 	  if (draw_omid) // if ((gv_column % 5) == 0)
 	    omid_text_v[id]->Draw();
 	  if (draw_omnum) omnum_text_v[id]->Draw();
-	  if (draw_content) content_text_v[id]->Draw();
+	  if (draw_content && content[id]!=0) content_text_v[id]->Draw();
 	  // else if (draw_omid_num) omid_num_text_v[id]->Draw();
 	}
       }
@@ -357,7 +357,7 @@ namespace sndisplay
 	  if (draw_omid) // if (((mw_column % 5) == 0) || (mw_column == 19))
 	      omid_text_v[id]->Draw();
 	  if (draw_omnum) omnum_text_v[id]->Draw();
-	  if (draw_content) content_text_v[id]->Draw();
+	  if (draw_content && content[id]!=0) content_text_v[id]->Draw();
 	  // else if (draw_omid_num) omid_num_text_v[id]->Draw();
 	}
       }
@@ -371,7 +371,7 @@ namespace sndisplay
 	    if (draw_omid) // if ((xw_column % 5) == 0)
 	      omid_text_v[id]->Draw();
 	    if (draw_omnum) omnum_text_v[id]->Draw();
-	    if (draw_content) content_text_v[id]->Draw();
+	    if (draw_content && content[id]!=0) content_text_v[id]->Draw();
 	    // else if (draw_omid_num) omid_num_text_v[id]->Draw();
 	  }
 	}
@@ -385,7 +385,7 @@ namespace sndisplay
 	  if (draw_omid) // if ((gv_column % 5) == 0)
 	    omid_text_v[id]->Draw();
 	  if (draw_omnum) omnum_text_v[id]->Draw();
-	  if (draw_content) content_text_v[id]->Draw();
+	  if (draw_content && content[id]!=0) content_text_v[id]->Draw();
 	  // else if (draw_omid_num) omid_num_text_v[id]->Draw();
 	}
       }
@@ -414,6 +414,10 @@ namespace sndisplay
       
     }
 
+    float getcontent (int omnum)
+    {
+      return content[omnum];
+    }
 
     void setcontent (int omnum, float value)
     {
@@ -546,39 +550,15 @@ void sndisplay_test ()
   sndisplay::calorimeter *sncalo = new sndisplay::calorimeter;
 
   sncalo->draw_omid_label();
-  // sncalo->draw_omnum_label();
   sncalo->draw_content_label("%.1f");
 
-  // sncalo->setcontent(0, 0.001);
-  // for (int omnum=1; omnum<712; ++omnum)
-  //   sncalo->setcontent(omnum, omnum/7.11);
-  //   // sncalo->ombox[omnum]->SetFillColor(TColor::GetColorPalette((int)(omnum/7.13)));
-
   TRandom trand;
-  
+
   for (int omnum=0; omnum<520; ++omnum)
-    sncalo->setcontent(omnum, trand.Gaus(100, 10));
-  
+    sncalo->setcontent(omnum, trand.Gaus(100, 10));  
+
   for (int omnum=520; omnum<712; ++omnum)
     sncalo->setcontent(omnum, trand.Gaus(50, 10));
-		       
-  
-  // sncalo->setcontent(0, -1, 0,  0, 1); // M:0.0.0
-  // sncalo->setcontent(0,  0, 0,  0, 1); // X:0.0.0.0
-  // sncalo->setcontent(0,  0, 0, -1, 1); // G:0.0.0
-
-  // sncalo->setcontent(0, -1, 0,  1, 2); // M:0.0.1
-  // sncalo->setcontent(0,  0, 0,  1, 2); // X:0.0.0.1
-  // sncalo->setcontent(0,  0, 1, -1, 2); // G:0.0.1
-
-
-  // sncalo->setcontent(1, -1, 19, 11, 3); // M:1.19.11
-  // sncalo->setcontent(1,  1,  1, 14, 3); // X:1.1.1.14
-  // sncalo->setcontent(1,  1, 14, -1, 3); // G:1.1.14
-
-  // sncalo->setcontent(1, -1, 19, 12, 4); // M:1.19.12
-  // sncalo->setcontent(1,  1,  1, 15, 4); // X:1.1.1.15
-  // sncalo->setcontent(1,  1, 15, -1, 4); // G:1.1.15
 
   sncalo->draw();
 
