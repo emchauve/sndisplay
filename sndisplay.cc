@@ -410,6 +410,10 @@ namespace sndisplay
       
       canvas_it->Modified();
       canvas_it->Update();
+
+      canvas_fr->Modified();
+      canvas_fr->Update();
+
       gSystem->ProcessEvents();
       
     }
