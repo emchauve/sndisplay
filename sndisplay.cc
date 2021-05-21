@@ -549,6 +549,8 @@ namespace sndisplay
   };
 }
 
+// sndisplay_test(): example of sndisplay::calorimeter usage
+
 void sndisplay_test ()
 {
   sndisplay::calorimeter *sncalo = new sndisplay::calorimeter;
@@ -565,6 +567,17 @@ void sndisplay_test ()
     sncalo->setcontent(omnum, trand.Gaus(50, 10));
 
   sncalo->draw();
-
 }
 
+// sndisplay_omnum(): build the detector map
+// to show the conversion OM_ID <=> OM_NUM
+
+void sndisplay_omnum ()
+{
+  sndisplay::calorimeter *sncalo = new sndisplay::calorimeter;
+
+  sncalo->draw_omid_label();
+  sncalo->draw_omnum_label();
+
+  sncalo->draw();
+}
