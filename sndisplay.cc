@@ -17,7 +17,6 @@ namespace sndisplay
   public:
     calorimeter (const char *n = "") : name (n)
     {
-      // canvas = NULL;
       canvas_it = NULL;
       canvas_fr = NULL;
 
@@ -25,9 +24,6 @@ namespace sndisplay
       draw_omnum = false;
       draw_content = false;
       draw_content_format = "%.0f";
-
-      has_italy_data = false;
-      has_french_data = false;
 
       for (unsigned int omnum=0; omnum<nb_om; ++omnum)
 	content.push_back(0);
@@ -211,9 +207,6 @@ namespace sndisplay
 
       } // for gv_side
 
-      // source_foil = new TLine (0.5, spacery, 0.5, 1-spacery);
-      // source_foil->SetLineWidth(2);
-
       it_label = new TText (spacerx,     spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.25*gv_sizey, "  ITALY");
       it_label->SetTextSize(0.036);
 
@@ -228,7 +221,6 @@ namespace sndisplay
       Double_t blue[nRGBs]  = { 1.00, 1.00, 0.20, 0.00, 0.00, 0.00 };
       
       palette_index = TColor::CreateGradientColorTable(nRGBs, stops, red, green, blue, 100);
-
     };
 
     ~calorimeter() {};
@@ -267,19 +259,10 @@ namespace sndisplay
     void draw()
     {
       if (canvas_it == NULL)
-	// canvas_it = new TCanvas (Form("C_it_%s",name.Data()), name, 1400, 800);
 	canvas_it = new TCanvas (Form("C_it_%s",name.Data()), name, 900, 600);
 
       if (canvas_fr == NULL)
 	canvas_fr = new TCanvas (Form("C_fr_%s",name.Data()), name, 900, 600);
-
-      // if (has_french_data && (canvas_fr == NULL))
-      // 	canvas_fr = new TCanvas (Form("C_it_%s",name.Data()), name, 1400, 800);
-
-      // if (pad_italy != NULL) delete pad_italy;
-      // pad_italy = new TPad ();
-      // canvas->cd();
-      // canvas->SetEditable(true);      
 
       if (draw_content)
 	{
@@ -403,8 +386,6 @@ namespace sndisplay
       for (unsigned int omnum=0; omnum<nb_om; ++omnum)
 	content[omnum] = 0;
 
-      // float content_min = 0; float content_max = 1;
-
       for (unsigned int omnum=0; omnum<nb_om; ++omnum)
 	ombox[omnum]->SetFillColor(0);
       
@@ -415,7 +396,6 @@ namespace sndisplay
       canvas_fr->Update();
 
       gSystem->ProcessEvents();
-      
     }
 
     float getcontent (int omnum)
@@ -425,19 +405,6 @@ namespace sndisplay
 
     void setcontent (int omnum, float value)
     {
-      if (omnum>=0 && omnum<260)
-	has_italy_data = true;
-      else if (omnum<520)
-	has_french_data = true;
-      else if (omnum<584)
-	has_italy_data = true;
-      else if (omnum<648)
-	has_french_data = true;
-      else if (omnum<680)
-	has_italy_data = true;
-      else if (omnum<712)
-	has_french_data = true;
-      
       content[omnum] = value;
     }
     
@@ -461,11 +428,6 @@ namespace sndisplay
 	printf("+++ sndisplay: skipping OM (%d.%d.%d.%d)\n", om_side, om_wall, om_column, om_row);
 	return;}
 
-      if (om_side == 0)
-	has_italy_data = true;
-      else if (om_side == 1)
-	has_french_data = true;
-
       content[omnum] = value;
     }
 
@@ -475,29 +437,30 @@ namespace sndisplay
       setcontent(omnum, content[omnum]+value);
     }
 
-    // void fill (int om_side, int om_wall, int om_column, int om_row, float value=1)
-    // {
-    //   setcontent(om_side, om_wall, om_column, om_row, content[omnum]+value);
-    // }
-
     void update()
     {
       float content_min = content[0];
       float content_max = content[0];
 
-      if (range_min == -1) {
-	for (unsigned int omnum=1; omnum<nb_om; ++omnum) {
-	  if (content[omnum] < content_min) content_min = content[omnum];
-	  if (content[omnum] > content_max) content_max = content[omnum];}
-      } else {
-	range_min = 0; content_max = range_max;}
+      if (range_min == -1)
+	{
+	  for (unsigned int omnum=1; omnum<nb_om; ++omnum) {
+	    if (content[omnum] < content_min) content_min = content[omnum];
+	    if (content[omnum] > content_max) content_max = content[omnum];}
+	}
+      else
+	{
+	  range_min = 0;
+	  content_max = range_max;
+	}
 
       for (unsigned int omnum=0; omnum<nb_om; ++omnum)
-	if (content[omnum] != 0)
-	  // ombox[omnum]->SetFillColor(TColor::GetColorPalette((int)(99*(content[omnum]-content_min)/(content_max-content_min))));
-	  ombox[omnum]->SetFillColor(palette_index + (int)(99*(content[omnum]-content_min)/(content_max-content_min)));
-	else
-	  ombox[omnum]->SetFillColor(0);
+	{
+	  if (content[omnum] != 0)
+	    ombox[omnum]->SetFillColor(palette_index + (int)(99*(content[omnum]-content_min)/(content_max-content_min)));
+	  else
+	    ombox[omnum]->SetFillColor(0);
+	}
 
       canvas_it->Modified();
       canvas_it->Update();
@@ -531,18 +494,13 @@ namespace sndisplay
     bool draw_content;
     TString draw_content_format;
 
-    bool has_italy_data;
-    bool has_french_data;
-
     std::vector<TText*> omid_text_v;
     std::vector<TText*> omnum_text_v;
     std::vector<TText*> content_text_v;
 
-    TLine *source_foil;
     TText *it_label;
     TText *fr_label;
     
-    // TCanvas *canvas;
     TCanvas *canvas_it;
     TCanvas *canvas_fr;
 
