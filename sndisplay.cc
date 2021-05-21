@@ -241,9 +241,9 @@ namespace sndisplay
       XW_MOUNTAIN,
       XW_TUNNEL};
 
-    void setrange(float xmin, float xmax) 
+    void setrange(float zmin, float zmax) 
     {
-      range_min = xmin; range_max = xmax;
+      range_min = zmin; range_max = zmax;
     }
 
     void draw_omid_label() {
@@ -439,25 +439,31 @@ namespace sndisplay
 
     void update()
     {
+      // autoset Z range [0, content_max]
+      // unless setrange() has been called
+
       float content_min = content[0];
       float content_max = content[0];
 
-      if (range_min == -1)
+      for (unsigned int omnum=1; omnum<nb_om; ++omnum)
 	{
-	  for (unsigned int omnum=1; omnum<nb_om; ++omnum) {
-	    if (content[omnum] < content_min) content_min = content[omnum];
-	    if (content[omnum] > content_max) content_max = content[omnum];}
+	  if (content[omnum] < content_min) content_min = content[omnum];
+	  if (content[omnum] > content_max) content_max = content[omnum];
 	}
-      else
-	{
-	  range_min = 0;
-	  content_max = range_max;
-	}
+
+      content_min = 0;
+      if (range_min != -1) content_min = range_min;
+      if (range_max != -1) content_max = range_max;
 
       for (unsigned int omnum=0; omnum<nb_om; ++omnum)
 	{
 	  if (content[omnum] != 0)
-	    ombox[omnum]->SetFillColor(palette_index + (int)(99*(content[omnum]-content_min)/(content_max-content_min)));
+	    {
+	      int color_index = floor (99*(content[omnum]-content_min)/(content_max-content_min));
+	      if (color_index < 0) color_index = 0;
+	      else if (color_index >= 100) color_index = 99;
+	      ombox[omnum]->SetFillColor(palette_index + color_index);
+	    }
 	  else
 	    ombox[omnum]->SetFillColor(0);
 	}
@@ -471,17 +477,6 @@ namespace sndisplay
       gSystem->ProcessEvents();
     }
     
-
-    // void setcontent(geomid) 
-
-    // void setcontent (uint32_t geomid0, uint32_t geomid1, uint32_t geomid2, uint32_t geomid3, uint32_t geomid4, float content)
-    // {
-    //   switch (geomid0)
-    // 	{
-    // 	  case 
-    // 	}
-    // }
-
     TString name;
 
     float range_min, range_max;
