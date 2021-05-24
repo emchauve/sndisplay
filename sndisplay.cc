@@ -504,6 +504,256 @@ namespace sndisplay
 
     int palette_index;
   };
+
+  class tracker
+  {
+  public:
+    tracker (const char *n = "") : name (n)
+    {
+      canvas = NULL;
+
+      draw_cellid = false;
+      draw_cellnum = false;
+      draw_content = false;
+      draw_content_format = "%.0f";
+
+      for (unsigned int cellnum=0; cellnum<nb_cell; ++cellnum)
+	content.push_back(0);
+
+      range_min = range_max = -1;
+
+      const double spacerx = 0.0125;
+      const double spacery = 0.0500;
+
+      const double cell_sizex = (1-2*spacerx)/113.0;
+      const double cell_sizey = (1-3*spacery)/(9*2);
+
+      //////////////////////////
+      // CELLS initialisation //
+      //////////////////////////
+
+      for (unsigned int cell_side=0; cell_side<2; ++cell_side) {
+
+	  for (unsigned int cell_row=0; cell_row<113; ++cell_row) {
+
+	    for (unsigned int cell_layer=0; cell_layer<9; ++cell_layer) {
+
+	    unsigned int cellnum = cell_side*113*9 + cell_row*9 + cell_layer;
+
+	    double x1 = spacerx + cell_row*cell_sizex;
+	    double y1 = spacery + cell_layer*cell_sizey;
+	    if (cell_side == 0) y1 += spacery + 9*cell_sizey;
+
+	    double x2 = x1 + cell_sizex;
+	    double y2 = y1 + cell_sizey;
+
+	    TBox *box = new TBox(x1, y1, x2, y2);
+	    box->SetFillColor(0);
+	    box->SetLineWidth(1);
+	    cellbox.push_back(box);
+
+	    TString cellid_string = Form("M:%1d.%d.%d", cell_side, cell_layer, cell_row);
+	    TText *cellid_text = new TText (x1+0.5*cell_sizex, y1+0.667*cell_sizey, cellid_string);
+	    cellid_text->SetTextSize(0.01);
+	    cellid_text->SetTextAlign(22);
+	    cellid_text_v.push_back(cellid_text);
+
+	    TString cellnum_string = Form("%03d", cellnum);
+	    TText *cellnum_text = new TText (x1+0.5*cell_sizex, y1+0.333*cell_sizey, cellnum_string);
+	    cellnum_text->SetTextSize(0.01);
+	    cellnum_text->SetTextAlign(22);
+	    cellnum_text_v.push_back(cellnum_text);
+
+	    TText *content_text = new TText (x1+0.5*cell_sizex, y1+0.333*cell_sizey, "");
+	    content_text->SetTextSize(0.01);
+	    content_text->SetTextAlign(22);
+	    content_text_v.push_back(content_text);
+
+	    } // for cell_row
+
+	} // for cell_layer
+
+      } // for cell_side
+
+      it_label = new TText (spacerx, 2.25*spacery+2*9*cell_sizey, "ITALY");
+      it_label->SetTextSize(0.036);
+
+      // fr_label = new TText (0.5 + spacerx, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.25*gv_sizey, "FRANCE");
+      fr_label = new TText (spacerx, 0.25*spacery, "FRANCE");
+      fr_label->SetTextSize(0.036);
+
+      const Int_t nRGBs = 6;
+      Double_t stops[nRGBs] = { 0.00, 0.20, 0.40, 0.60, 0.80, 1.00 };
+      Double_t red[nRGBs]   = { 0.25, 0.00, 0.20, 1.00, 1.00, 0.90 };
+      Double_t green[nRGBs] = { 0.25, 0.80, 1.00, 1.00, 0.80, 0.00 };
+      Double_t blue[nRGBs]  = { 1.00, 1.00, 0.20, 0.00, 0.00, 0.00 };
+
+      palette_index = TColor::CreateGradientColorTable(nRGBs, stops, red, green, blue, 100);
+    };
+
+    ~tracker() {};
+
+    static const unsigned int nb_cell  = 2034;
+
+    void setrange(float zmin, float zmax) 
+    {
+      range_min = zmin; range_max = zmax;
+    }
+
+    void draw_cellid_label() {
+      draw_cellid = true;}
+
+    void draw_cellnum_label() {
+      draw_cellnum = true;}
+
+    void draw_content_label(const char *format="%.0f") {
+      draw_content_format = TString(format);
+      draw_content = true;}
+
+    void draw()
+    {
+      if (canvas == NULL)
+	canvas = new TCanvas (Form("C_%s",name.Data()), name, 1500, 300);
+
+      if (draw_content)
+	{
+	  for (int cellnum=0; cellnum<nb_cell; ++cellnum)
+	    {
+	      TText *ttext = content_text_v[cellnum];
+	      ttext->SetText(ttext->GetX(), ttext->GetY(), Form(draw_content_format.Data(), content[cellnum]));
+	    }
+	}
+
+      canvas->cd();
+      canvas->SetEditable(true);
+
+      for (unsigned int cell_side=0; cell_side<2; ++cell_side) {
+
+	for (unsigned int cell_row=0; cell_row<113; ++cell_row) {
+
+	  for (unsigned int cell_layer=0; cell_layer<9; ++cell_layer) {
+
+	    unsigned int cellnum = cell_side*113*9 + cell_row*9 + cell_layer;
+
+	    cellbox[cellnum]->Draw("l");
+
+	    if (draw_cellid)
+	      cellid_text_v[cellnum]->Draw();
+
+	    if (draw_cellnum)
+	      cellnum_text_v[cellnum]->Draw();
+
+	    if (draw_content && content[cellnum]!=0)
+	      content_text_v[cellnum]->Draw();
+	  }
+
+	}
+
+      }
+
+      it_label->Draw();
+      fr_label->Draw();
+
+      canvas->SetEditable(false);
+
+      update();
+    }
+
+    void reset() {
+      for (unsigned int cellnum=0; cellnum<nb_cell; ++cellnum)
+	content[cellnum] = 0;
+
+      for (unsigned int cellnum=0; cellnum<nb_cell; ++cellnum)
+	cellbox[cellnum]->SetFillColor(0);
+
+      canvas->Modified();
+      canvas->Update();
+
+      gSystem->ProcessEvents();
+    }
+
+    float getcontent (int cellnum)
+    {
+      return content[cellnum];
+    }
+
+    void setcontent (int cellnum, float value)
+    {
+      content[cellnum] = value;
+    }
+
+    void setcontent (int cell_side, int cell_layer, int cell_row, float value)
+    {
+      unsigned int cellnum = cell_side*9*113 + cell_layer*113 + cell_row;
+      if (cellnum < nb_cell) content[cellnum] = value;
+      else printf("*** wrong cell ID\n");
+    }
+
+    void fill (int cellnum, float value=1)
+    {
+      setcontent(cellnum, content[cellnum]+value);
+    }
+
+    void update()
+    {
+      // autoset Z range [0, content_max]
+      // unless setrange() has been called
+
+      float content_min = content[0];
+      float content_max = content[0];
+
+      for (unsigned int cellnum=1; cellnum<nb_cell; ++cellnum)
+	{
+	  if (content[cellnum] < content_min) content_min = content[cellnum];
+	  if (content[cellnum] > content_max) content_max = content[cellnum];
+	}
+
+      content_min = 0;
+      if (range_min != -1) content_min = range_min;
+      if (range_max != -1) content_max = range_max;
+
+      for (unsigned int cellnum=0; cellnum<nb_cell; ++cellnum)
+	{
+	  if (content[cellnum] != 0)
+	    {
+	      int color_index = floor (99*(content[cellnum]-content_min)/(content_max-content_min));
+	      if (color_index < 0) color_index = 0;
+	      else if (color_index >= 100) color_index = 99;
+	      cellbox[cellnum]->SetFillColor(palette_index + color_index);
+	    }
+	  else
+	    cellbox[cellnum]->SetFillColor(0);
+	}
+
+      canvas->Modified();
+      canvas->Update();
+
+      gSystem->ProcessEvents();
+    }
+
+    TString name;
+
+    float range_min, range_max;
+
+    std::vector<float> content;
+    std::vector<TBox*>   cellbox;
+
+    bool draw_cellid;
+    bool draw_cellnum;
+    bool draw_content;
+    TString draw_content_format;
+
+    std::vector<TText*> cellid_text_v;
+    std::vector<TText*> cellnum_text_v;
+    std::vector<TText*> content_text_v;
+
+    TText *it_label;
+    TText *fr_label;
+
+    TCanvas *canvas;
+
+    int palette_index;
+  };
 }
 
 // sndisplay_test(): example of sndisplay::calorimeter usage
@@ -537,4 +787,20 @@ void sndisplay_omnum ()
   sncalo->draw_omnum_label();
 
   sncalo->draw();
+}
+
+
+void sndisplay_cellnum ()
+{
+  sndisplay::tracker *sntracker = new sndisplay::tracker;
+
+  // sntracker->draw_cellid_label();
+  // sntracker->draw_cellnum_label();
+
+  TRandom trand;
+
+  for (int cellnum=0; cellnum<2034; ++cellnum)
+    sntracker->setcontent(cellnum, trand.Gaus(100, 10));
+
+  sntracker->draw();
 }

@@ -1,6 +1,8 @@
-# sndisplay : supernemo calorimeter (and soon tracker ?) display
+# sndisplay : supernemo calorimeter and (preliminary) tracker display
 
-![THlog screenshot](sndisplay.png)
+![sndisplay calo screenshot](sndisplay_calo.png)
+
+![sndisplay tracker screenshot](sndisplay_tracker.png)
 
 run demo script :
 ```	  
