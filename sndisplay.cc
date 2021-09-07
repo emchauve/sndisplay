@@ -779,7 +779,7 @@ namespace sndisplay
       const double se_sizey = 0.313*mw_sizey;
       const double gg_sizey = (1-2*spacery-2*mw_sizey-se_sizey)/18.0;
 
-      const double mw_sizex = (1-2*spacerx)/(20 + 2*0.5);
+      const double mw_sizex = (1-2*spacerx)/(20 + 2*0.5*0.720);
       const double xw_sizex = (1-2*spacerx-20*mw_sizex);
       const double se_sizex = (1-2*spacerx-2*xw_sizex);
       const double gg_sizex = se_sizex/113.0;
@@ -806,7 +806,7 @@ namespace sndisplay
 	  
 	  TString omid_string = Form("M:%1d.%d.*", mw_side, mw_column);
 	  TText *omid_text = new TText (x1+0.5*mw_sizex, y1+0.667*mw_sizey, omid_string);
-	  omid_text->SetTextSize(0.036);
+	  omid_text->SetTextSize(0.032);
 	  omid_text->SetTextAlign(22);
 	  top_om_text.push_back(omid_text);
 
@@ -848,8 +848,8 @@ namespace sndisplay
 	    top_om_box.push_back(box);
 	  
 	    TString omid_string = Form("X:%1d.%1d.%1d.*", xw_side, xw_wall, xw_column);
-	    TText *omid_text = new TText (x1+0.5*mw_sizex, y1+0.6*mw_sizey, omid_string);
-	    omid_text->SetTextSize(0.036);
+	    TText *omid_text = new TText (x1+0.5*xw_sizex, y1+0.6*xw_sizey, omid_string);
+	    omid_text->SetTextSize(0.032);
 	    omid_text->SetTextAlign(22);
 	    top_om_text.push_back(omid_text);
 
@@ -943,6 +943,7 @@ namespace sndisplay
 	    }
 	}
 
+      update();
 
     } // draw_top
 
