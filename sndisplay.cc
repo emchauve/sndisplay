@@ -518,6 +518,8 @@ namespace sndisplay
       draw_content = false;
       draw_content_format = "%.0f";
 
+      range_min = range_max = -1;
+      
       for (unsigned int cellnum=0; cellnum<nb_cell; ++cellnum)
 	content.push_back(0);
 
@@ -901,6 +903,13 @@ namespace sndisplay
 
     } // demonstrator ()
 
+
+    void setrange(float zmin, float zmax) 
+    {
+      range_min = zmin; range_max = zmax;
+    }
+
+
     void draw_top()
     {
       if (demonstrator_canvas == NULL)
@@ -975,13 +984,19 @@ namespace sndisplay
     }
 
 
-    void setggcontent (int cell_side, int cell_layer, int cell_row, float value)
+    void setggcontent (int cell_side, int cell_row, int cell_layer, float value)
     {
       unsigned int cellnum = cell_side*9*113 + cell_row*9 + cell_layer;
       if (cellnum < 2034) top_gg_content[cellnum] = value;
       else printf("*** wrong cell ID\n");
     }
 
+    void setggcolor (int cell_side, int cell_row, int cell_layer, Color_t color)
+    {
+      unsigned int cellnum = cell_side*9*113 + cell_row*9 + cell_layer;
+      top_gg_ellipse[cellnum]->SetFillColor(color);
+    }
+    
     void setggcontent (int cell_num, float value)
     {
       int cell_side = cell_num/1017;
@@ -1030,8 +1045,8 @@ namespace sndisplay
     	}
 
       top_content_min = 0;
-      // if (range_min != -1) top_content_min = range_min;
-      // if (range_max != -1) top_content_max = range_max;
+      if (range_min != -1) top_content_min = range_min;
+      if (range_max != -1) top_content_max = range_max;
 
       for (size_t om=0; om<top_om_content.size(); ++om)
     	{
@@ -1069,6 +1084,8 @@ namespace sndisplay
 
     TString demonstrator_name;
 
+    float range_min, range_max;
+    
     // calorimeter *calorimeter_display;
     // tracker *tracker_display;
 
