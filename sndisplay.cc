@@ -685,14 +685,14 @@ namespace sndisplay
 
     void setcontent (int cellnum, float value)
     {
-      content[cellnum] = value;
+      if (cellnum < nb_cell) content[cellnum] = value;
+      else printf("*** wrong cell ID\n");
     }
 
     void setcontent (int cell_side, int cell_row, int cell_layer, float value)
     {
       unsigned int cellnum = cell_side*9*113 + cell_row*9 + cell_layer;
-      if (cellnum < nb_cell) content[cellnum] = value;
-      else printf("*** wrong cell ID\n");
+      setcontent(cellnum, value);
     }
 
     void fill (int cellnum, float value=1)
@@ -770,6 +770,8 @@ namespace sndisplay
     {
       // calorimeter_display = new calorimeter(n);
       // tracker_display = new tracker(n);
+
+      range_min = range_max = -1;
 
       // TOP_VIEW //
 
@@ -984,26 +986,31 @@ namespace sndisplay
     }
 
 
-    void setggcontent (int cell_side, int cell_row, int cell_layer, float value)
+    void setggcontent (unsigned int cell_num, float value)
     {
-      unsigned int cellnum = cell_side*9*113 + cell_row*9 + cell_layer;
-      if (cellnum < 2034) top_gg_content[cellnum] = value;
+      if (cell_num < 2034) top_gg_content[cell_num] = value;
       else printf("*** wrong cell ID\n");
     }
-
-    void setggcolor (int cell_side, int cell_row, int cell_layer, Color_t color)
+    
+    void setggcontent (int cell_side, int cell_row, int cell_layer, float value)
     {
-      unsigned int cellnum = cell_side*9*113 + cell_row*9 + cell_layer;
-      top_gg_ellipse[cellnum]->SetFillColor(color);
+      unsigned int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
+      setggcontent(cell_num, value);
     }
     
-    void setggcontent (int cell_num, float value)
+    void setggcolor (int cell_num, Color_t color)
     {
-      int cell_side = cell_num/1017;
-      int cell_row = (cell_num-cell_side*1017)/9;
-      int cell_layer = cell_num%9;
-      setggcontent (cell_side, cell_layer, cell_row, value);
+      if (cell_num < 2034) top_gg_ellipse[cell_num]->SetFillColor(color);
+      else printf("*** wrong cell ID\n");
     }
+    
+    void setggcolor (int cell_side, int cell_row, int cell_layer, Color_t color)
+    {
+      unsigned int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
+      setggcolor(cell_num, color);
+    }
+
+    
 
 
     void reset()
