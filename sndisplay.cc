@@ -548,11 +548,12 @@ namespace sndisplay
 
 	  for (unsigned int cell_row=0; cell_row<113; ++cell_row) {
 
+	    double x1 = spacerx + cell_row*cell_sizex;
+
 	    for (unsigned int cell_layer=0; cell_layer<9; ++cell_layer) {
 
 	    unsigned int cellnum = cell_side*113*9 + cell_row*9 + cell_layer;
 
-	    double x1 = spacerx + cell_row*cell_sizex;
 	    double y1 = spacery;
 
 	    if (cell_side == 0)
@@ -584,9 +585,17 @@ namespace sndisplay
 	    content_text->SetTextAlign(22);
 	    content_text_v.push_back(content_text);
 
-	    } // for cell_row
+	    } // for cell_layer
 
-	} // for cell_layer
+	    if ((cell_row %5) == 0)
+	      {
+		TText *row_text = new TText (x1+0.5*cell_sizex, 0.5, Form("%d",cell_row));
+		row_text->SetTextSize(0.03);
+		row_text->SetTextAngle(90);
+		row_text->SetTextAlign(22);
+		row_text_v.push_back(row_text);
+	      }
+	  } // for cell_row
 
       } // for cell_side
 
@@ -628,7 +637,7 @@ namespace sndisplay
     void draw()
     {
       if (canvas == NULL)
-	canvas = new TCanvas (Form("C_%s",tracker_name.Data()), tracker_name, 1500, 300);
+	canvas = new TCanvas (Form("C_%s",tracker_name.Data()), tracker_name, 1800, 360);
 
       if (draw_content)
 	{
@@ -665,6 +674,9 @@ namespace sndisplay
 	}
 
       }
+
+      for (TText *row_text : row_text_v)
+	row_text->Draw();
 
       it_label->Draw();
       fr_label->Draw();
@@ -768,6 +780,7 @@ namespace sndisplay
     std::vector<TText*> cellid_text_v;
     std::vector<TText*> cellnum_text_v;
     std::vector<TText*> content_text_v;
+    std::vector<TText*> row_text_v;
 
     TText *it_label;
     TText *fr_label;
