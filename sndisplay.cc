@@ -468,6 +468,15 @@ namespace sndisplay
 	    ombox[omnum]->SetFillColor(0);
 	}
 
+      if (draw_content)
+	{
+	  for (int omnum=0; omnum<nb_om; ++omnum)
+	    {
+	      TText *ttext = content_text_v[omnum];
+	      ttext->SetText(ttext->GetX(), ttext->GetY(), Form(draw_content_format.Data(), content[omnum]));
+	    }
+	}
+
       canvas_it->Modified();
       canvas_it->Update();
 
@@ -695,6 +704,12 @@ namespace sndisplay
       setcontent(cellnum, value);
     }
 
+    void setcolor (int cell_num, Color_t color)
+    {
+      if (cell_num < 2034) cellbox[cell_num]->SetFillColor(color);
+      else printf("*** wrong cell ID\n");
+    }
+
     void fill (int cellnum, float value=1)
     {
       setcontent(cellnum, content[cellnum]+value);
@@ -717,6 +732,7 @@ namespace sndisplay
       content_min = 0;
       if (range_min != -1) content_min = range_min;
       if (range_max != -1) content_max = range_max;
+      printf("Z range = [%f, %f] for '%s'\n", content_min, content_max, tracker_name.Data());
 
       for (unsigned int cellnum=0; cellnum<nb_cell; ++cellnum)
 	{
@@ -787,6 +803,9 @@ namespace sndisplay
       const double xw_sizex = (1-2*spacerx-20*mw_sizex);
       const double se_sizex = (1-2*spacerx-2*xw_sizex);
       const double gg_sizex = se_sizex/113.0;
+
+      // printf("gg_sizex = %f\n", gg_sizex);
+      // printf("gg_sizey = %f\n", gg_sizey);
 
       // MW (column only)
 
@@ -916,6 +935,7 @@ namespace sndisplay
     {
       if (demonstrator_canvas == NULL)
 	demonstrator_canvas = new TCanvas (Form("C_demonstrator_%s",demonstrator_name.Data()), Form("%s",demonstrator_name.Data()), 1800, 450);
+      else demonstrator_canvas->cd();
 
       for (unsigned int mw_side=0; mw_side<2; ++mw_side)
 	{
@@ -1036,6 +1056,8 @@ namespace sndisplay
 
     void update()
     {
+      demonstrator_canvas->cd();
+
       float top_content_min = top_om_content[0];
       float top_content_max = top_om_content[0];
 
@@ -1054,6 +1076,7 @@ namespace sndisplay
       top_content_min = 0;
       if (range_min != -1) top_content_min = range_min;
       if (range_max != -1) top_content_max = range_max;
+      // printf("Z range = [%f, %f] for '%s'\n", top_content_min, top_content_max, demonstrator_name.Data());
 
       for (size_t om=0; om<top_om_content.size(); ++om)
     	{
