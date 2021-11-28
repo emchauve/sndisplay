@@ -67,28 +67,28 @@ namespace sndisplay
 	    double x2 = x1 + mw_sizex;
 	    double y2 = y1 + mw_sizey;
 
-	    TBox *box = new TBox(x1, y1, x2, y2);
-	    box->SetFillColor(0);
-	    box->SetLineWidth(1);
+	    TBox box (x1, y1, x2, y2);
+	    box.SetFillColor(0);
+	    box.SetLineWidth(1);
 	    ombox.push_back(box);
 
 	    TString omid_string = Form("M:%1d.%d.%d", mw_side, mw_column, mw_row);
-	    TText *omid_text = new TText (x1+0.5*mw_sizex, y1+0.7*mw_sizey, omid_string);
-	    omid_text->SetTextFont(42);
-	    omid_text->SetTextSize(0.013);
-	    omid_text->SetTextAlign(22);
+	    TText omid_text (x1+0.5*mw_sizex, y1+0.7*mw_sizey, omid_string);
+	    omid_text.SetTextFont(42);
+	    omid_text.SetTextSize(0.013);
+	    omid_text.SetTextAlign(22);
 	    omid_text_v.push_back(omid_text);
 
 	    TString omnum_string = Form("%03d", omnum);
-	    TText *omnum_text = new TText (x1+0.5*mw_sizex, y1+0.7*mw_sizey, omnum_string);
-	    omnum_text->SetTextFont(42);
-	    omnum_text->SetTextSize(0.013);
-	    omnum_text->SetTextAlign(22);
+	    TText omnum_text (x1+0.5*mw_sizex, y1+0.7*mw_sizey, omnum_string);
+	    omnum_text.SetTextFont(42);
+	    omnum_text.SetTextSize(0.013);
+	    omnum_text.SetTextAlign(22);
 	    omnum_text_v.push_back(omnum_text);
 
-	    TText *content_text = new TText (x1+0.5*mw_sizex, y1+0.3*mw_sizey, "");
-	    content_text->SetTextSize(0.02);
-	    content_text->SetTextAlign(22);
+	    TText content_text (x1+0.5*mw_sizex, y1+0.3*mw_sizey, "");
+	    content_text.SetTextSize(0.02);
+	    content_text.SetTextAlign(22);
 	    content_text_v.push_back(content_text);
   
 	  } // for mw_row
@@ -134,28 +134,30 @@ namespace sndisplay
 	    double y1 = spacery + gv_sizey + spacery + xw_sizey*(xw_row);
 	    double y2 = spacery + gv_sizey + spacery + xw_sizey*(xw_row+1);
 
-	    TBox *box = new TBox(x1, y1, x2, y2);
-	    box->SetFillColor(0);
-	    box->SetLineWidth(1);
+	    TBox box (x1, y1, x2, y2);
+	    box.SetFillColor(0);
+	    box.SetLineWidth(1);
 	    ombox.push_back(box);
 
 	    TString omid_string = Form("X:%1d.%1d.%1d.%d", xw_side, xw_wall, xw_column, xw_row);
-	    TText *omid_text = new TText (x1+0.5*mw_sizex, y1+0.7*xw_sizey, omid_string);
-	    omid_text->SetTextFont(42);
-	    omid_text->SetTextSize(0.013);
-	    omid_text->SetTextAlign(22);
+
+	    TText omid_text (x1+0.5*mw_sizex, y1+0.7*xw_sizey, omid_string);
+	    omid_text.SetTextFont(42);
+	    omid_text.SetTextSize(0.013);
+	    omid_text.SetTextAlign(22);
 	    omid_text_v.push_back(omid_text);
 
 	    TString omnum_string = Form("%03d", omnum);
-	    TText *omnum_text = new TText (x1+0.5*xw_sizex, y1+0.7*xw_sizey, omnum_string);
-	    omnum_text->SetTextFont(42);
-	    omnum_text->SetTextSize(0.013);
-	    omnum_text->SetTextAlign(22);
+
+	    TText omnum_text (x1+0.5*xw_sizex, y1+0.7*xw_sizey, omnum_string);
+	    omnum_text.SetTextFont(42);
+	    omnum_text.SetTextSize(0.013);
+	    omnum_text.SetTextAlign(22);
 	    omnum_text_v.push_back(omnum_text);
 
-	    TText *content_text = new TText (x1+0.5*xw_sizex, y1+0.3*xw_sizey, "");
-	    content_text->SetTextSize(0.02);
-	    content_text->SetTextAlign(22);
+	    TText content_text (x1+0.5*xw_sizex, y1+0.3*xw_sizey, "");
+	    content_text.SetTextSize(0.02);
+	    content_text.SetTextAlign(22);
 	    content_text_v.push_back(content_text);
 
 	    } // for xw_row
@@ -190,28 +192,30 @@ namespace sndisplay
 	    double y1 = spacery + gv_wall*(gv_sizey + spacery + 13*mw_sizey + spacery);
 	    double y2 = y1 + gv_sizey;
 	    
-	    TBox *box = new TBox(x1, y1, x2, y2);
-	    box->SetFillColor(0);
-	    box->SetLineWidth(1);
+	    TBox box (x1, y1, x2, y2);
+	    box.SetFillColor(0);
+	    box.SetLineWidth(1);
 	    ombox.push_back(box);
 
 	    TString omid_string = Form("G:%1d.%1d.%d", gv_side, gv_wall, gv_column);
-	    TText *omid_text = new TText (x1+0.5*gv_sizex, y1+0.7*gv_sizey, omid_string);
-	    omid_text->SetTextFont(42);
-	    omid_text->SetTextSize(0.013);
-	    omid_text->SetTextAlign(22);
+
+	    TText omid_text (x1+0.5*gv_sizex, y1+0.7*gv_sizey, omid_string);
+	    omid_text.SetTextFont(42);
+	    omid_text.SetTextSize(0.013);
+	    omid_text.SetTextAlign(22);
 	    omid_text_v.push_back(omid_text);
 
 	    TString omnum_string = Form("%03d", omnum);
-	    TText *omnum_text = new TText (x1+0.5*gv_sizex, y1+0.7*gv_sizey, omnum_string);
-	    omnum_text->SetTextFont(42);
-	    omnum_text->SetTextSize(0.013);
-	    omnum_text->SetTextAlign(22);
+
+	    TText omnum_text (x1+0.5*gv_sizex, y1+0.7*gv_sizey, omnum_string);
+	    omnum_text.SetTextFont(42);
+	    omnum_text.SetTextSize(0.013);
+	    omnum_text.SetTextAlign(22);
 	    omnum_text_v.push_back(omnum_text);
 
-	    TText *content_text = new TText (x1+0.5*gv_sizex, y1+0.3*gv_sizey, "");
-	    content_text->SetTextSize(0.02);
-	    content_text->SetTextAlign(22);
+	    TText content_text (x1+0.5*gv_sizex, y1+0.3*gv_sizey, "");
+	    content_text.SetTextSize(0.02);
+	    content_text.SetTextAlign(22);
 	    content_text_v.push_back(content_text);
 
 	  } // for gv_column
@@ -343,10 +347,7 @@ namespace sndisplay
       if (draw_content && !text_was_set)
 	{
 	  for (int omnum=0; omnum<nb_om; ++omnum)
-	    {
-	      TText *ttext = content_text_v[omnum];
-	      ttext->SetText(ttext->GetX(), ttext->GetY(), Form(draw_content_format.Data(), content[omnum]));
-	    }
+	    settext(omnum, Form(draw_content_format.Data(), content[omnum]));
 	}
 
       /////////////
@@ -360,13 +361,13 @@ namespace sndisplay
       for (int mw_column=0; mw_column<20; ++mw_column) {
 	for (int mw_row=0; mw_row<13; ++mw_row) {
 	  int id = mw_side*20*13 + mw_column*13 + mw_row;
-	  ombox[id]->Draw("l");
+	  ombox[id].Draw("l");
 	  if (draw_omid)
-	    omid_text_v[id]->Draw();
+	    omid_text_v[id].Draw();
 	  else if (draw_omnum)
-	    omnum_text_v[id]->Draw();
+	    omnum_text_v[id].Draw();
 	  if ((draw_content && content[id]!=0) || text_was_set)
-	    content_text_v[id]->Draw();
+	    content_text_v[id].Draw();
 	}
       }
       
@@ -375,13 +376,13 @@ namespace sndisplay
 	for (int xw_column=0; xw_column<2; ++xw_column) {
 	  for (int xw_row=0; xw_row<16; ++xw_row) {
 	    int id = 520 + xw_side*2*2*16 + xw_wall*2*16 + xw_column*16 + xw_row;
-	    ombox[id]->Draw("l");
+	    ombox[id].Draw("l");
 	    if (draw_omid)
-	      omid_text_v[id]->Draw();
+	      omid_text_v[id].Draw();
 	    else if (draw_omnum)
-	      omnum_text_v[id]->Draw();
+	      omnum_text_v[id].Draw();
 	    if ((draw_content && content[id]!=0) || text_was_set)
-	      content_text_v[id]->Draw();
+	      content_text_v[id].Draw();
 	  }
 	}
       }
@@ -390,13 +391,13 @@ namespace sndisplay
       for (int gv_wall=0; gv_wall<2; ++gv_wall) {
 	for (int gv_column=0; gv_column<16; ++gv_column) {
 	  int id = 520 + 128 + gv_side*2*16 + gv_wall*16 + gv_column;
-	  ombox[id]->Draw("l");
+	  ombox[id].Draw("l");
 	  if (draw_omid) // if ((gv_column % 5) == 0)
-	    omid_text_v[id]->Draw();
+	    omid_text_v[id].Draw();
 	  else if (draw_omnum)
-	    omnum_text_v[id]->Draw();
+	    omnum_text_v[id].Draw();
 	  if ((draw_content && content[id]!=0) || text_was_set)
-	    content_text_v[id]->Draw();
+	    content_text_v[id].Draw();
 	}
       }
 
@@ -417,13 +418,13 @@ namespace sndisplay
       for (int mw_column=0; mw_column<20; ++mw_column) {
 	for (int mw_row=0; mw_row<13; ++mw_row) {
 	  int id = mw_side*20*13 + mw_column*13 + mw_row;
-	  ombox[id]->Draw("l");
+	  ombox[id].Draw("l");
 	  if (draw_omid)
-	      omid_text_v[id]->Draw();
+	      omid_text_v[id].Draw();
 	  else if (draw_omnum)
-	    omnum_text_v[id]->Draw();
+	    omnum_text_v[id].Draw();
 	  if ((draw_content && content[id]!=0) || text_was_set)
-	    content_text_v[id]->Draw();
+	    content_text_v[id].Draw();
 	}
       }
       
@@ -432,13 +433,13 @@ namespace sndisplay
 	for (int xw_column=0; xw_column<2; ++xw_column) {
 	  for (int xw_row=0; xw_row<16; ++xw_row) {
 	    int id = 520 + xw_side*2*2*16 + xw_wall*2*16 + xw_column*16 + xw_row;
-	    ombox[id]->Draw("l");
+	    ombox[id].Draw("l");
 	    if (draw_omid)
-	      omid_text_v[id]->Draw();
+	      omid_text_v[id].Draw();
 	    else if (draw_omnum)
-	      omnum_text_v[id]->Draw();
+	      omnum_text_v[id].Draw();
 	    if ((draw_content && content[id]!=0) || text_was_set)
-	      content_text_v[id]->Draw();
+	      content_text_v[id].Draw();
 	  }
 	}
       }
@@ -447,13 +448,13 @@ namespace sndisplay
       for (int gv_wall=0; gv_wall<2; ++gv_wall) {
 	for (int gv_column=0; gv_column<16; ++gv_column) {
 	  int id = 520 + 128 + gv_side*2*16 + gv_wall*16 + gv_column;
-	  ombox[id]->Draw("l");
+	  ombox[id].Draw("l");
 	  if (draw_omid)
-	    omid_text_v[id]->Draw();
+	    omid_text_v[id].Draw();
 	  else if (draw_omnum)
-	    omnum_text_v[id]->Draw();
+	    omnum_text_v[id].Draw();
 	  if ((draw_content && content[id]!=0) || text_was_set)
-	    content_text_v[id]->Draw();
+	    content_text_v[id].Draw();
 	}
       }
 
@@ -476,7 +477,7 @@ namespace sndisplay
 	content[omnum] = 0;
 
       for (int omnum=0; omnum<nb_om; ++omnum)
-	ombox[omnum]->SetFillColor(0);
+	ombox[omnum].SetFillColor(0);
       
       canvas_it->Modified();
       canvas_it->Update();
@@ -526,7 +527,7 @@ namespace sndisplay
     {
       if ((omnum >= 0) && (omnum < nb_om))
 	{
-	  ombox[omnum]->SetFillColor(color);
+	  ombox[omnum].SetFillColor(color);
 	  color_was_set = true;
 	}
       else printf("*** wrong OM NUM\n");
@@ -536,8 +537,7 @@ namespace sndisplay
     {
       if ((omnum >= 0) && (omnum < nb_om))
 	{
-	  TText *ttext = content_text_v[omnum];
-	  ttext->SetText(ttext->GetX(), ttext->GetY(), text);
+	  content_text_v[omnum].SetText(content_text_v[omnum].GetX(), content_text_v[omnum].GetY(), text);
 	  text_was_set = true;
 	}
       else printf("*** wrong OM NUM\n");
@@ -589,19 +589,16 @@ namespace sndisplay
 	      int color_index = floor (99*(content[omnum]-content_min)/(content_max-content_min));
 	      if (color_index < 0) color_index = 0;
 	      else if (color_index >= 100) color_index = 99;
-	      ombox[omnum]->SetFillColor(palette_index + color_index);
+	      ombox[omnum].SetFillColor(palette_index + color_index);
 	    }
 	  else
-	    ombox[omnum]->SetFillColor(0);
+	    ombox[omnum].SetFillColor(0);
 	}
 
       if (draw_content)
 	{
 	  for (int omnum=0; omnum<nb_om; ++omnum)
-	    {
-	      TText *ttext = content_text_v[omnum];
-	      ttext->SetText(ttext->GetX(), ttext->GetY(), Form(draw_content_format.Data(), content[omnum]));
-	    }
+	    settext(omnum, Form(draw_content_format.Data(), content[omnum]));
 	}
 
       if (palette_axis)
@@ -644,10 +641,10 @@ namespace sndisplay
 
     std::vector<float> content;
 
-    std::vector<TBox*>  ombox;
-    std::vector<TText*> omid_text_v;
-    std::vector<TText*> omnum_text_v;
-    std::vector<TText*> content_text_v;
+    std::vector<TBox>  ombox;
+    std::vector<TText> omid_text_v;
+    std::vector<TText> omnum_text_v;
+    std::vector<TText> content_text_v;
 
   }; // sndisplay::calorimeter class
 
