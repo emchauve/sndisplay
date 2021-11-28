@@ -71,18 +71,18 @@ namespace sndisplay
 	    ombox.push_back(box);
 
 	    TString omid_string = Form("M:%1d.%d.%d", mw_side, mw_column, mw_row);
-	    TText *omid_text = new TText (x1+0.5*mw_sizex, y1+0.667*mw_sizey, omid_string);
-	    omid_text->SetTextSize(0.014);
+	    TText *omid_text = new TText (x1+0.5*mw_sizex, y1+0.7*mw_sizey, omid_string);
+	    omid_text->SetTextSize(0.012);
 	    omid_text->SetTextAlign(22);
 	    omid_text_v.push_back(omid_text);
 
 	    TString omnum_string = Form("%03d", omnum);
-	    TText *omnum_text = new TText (x1+0.5*mw_sizex, y1+0.333*mw_sizey, omnum_string);
+	    TText *omnum_text = new TText (x1+0.5*mw_sizex, y1+0.3*mw_sizey, omnum_string);
 	    omnum_text->SetTextSize(0.02);
 	    omnum_text->SetTextAlign(22);
 	    omnum_text_v.push_back(omnum_text);
 
-	    TText *content_text = new TText (x1+0.5*mw_sizex, y1+0.333*mw_sizey, "");
+	    TText *content_text = new TText (x1+0.5*mw_sizex, y1+0.3*mw_sizey, "");
 	    content_text->SetTextSize(0.02);
 	    content_text->SetTextAlign(22);
 	    content_text_v.push_back(content_text);
@@ -136,18 +136,18 @@ namespace sndisplay
 	    ombox.push_back(box);
 
 	    TString omid_string = Form("X:%1d.%1d.%1d.%d", xw_side, xw_wall, xw_column, xw_row);
-	    TText *omid_text = new TText (x1+0.5*mw_sizex, y1+0.6*mw_sizey, omid_string);
-	    omid_text->SetTextSize(0.014);
+	    TText *omid_text = new TText (x1+0.5*mw_sizex, y1+0.7*xw_sizey, omid_string);
+	    omid_text->SetTextSize(0.012);
 	    omid_text->SetTextAlign(22);
 	    omid_text_v.push_back(omid_text);
 
 	    TString omnum_string = Form("%03d", omnum);
-	    TText *omnum_text = new TText (x1+0.5*xw_sizex, y1+0.333*xw_sizey, omnum_string);
+	    TText *omnum_text = new TText (x1+0.5*xw_sizex, y1+0.3*xw_sizey, omnum_string);
  	    omnum_text->SetTextSize(0.02);
  	    omnum_text->SetTextAlign(22);
 	    omnum_text_v.push_back(omnum_text);
 
-	    TText *content_text = new TText (x1+0.5*xw_sizex, y1+0.333*xw_sizey, "");
+	    TText *content_text = new TText (x1+0.5*xw_sizex, y1+0.3*xw_sizey, "");
 	    content_text->SetTextSize(0.02);
 	    content_text->SetTextAlign(22);
 	    content_text_v.push_back(content_text);
@@ -190,18 +190,18 @@ namespace sndisplay
 	    ombox.push_back(box);
 
 	    TString omid_string = Form("G:%1d.%1d.%d", gv_side, gv_wall, gv_column);
-	    TText *omid_text = new TText (x1+0.5*gv_sizex, y1+0.667*gv_sizey, omid_string);
-	    omid_text->SetTextSize(0.014);
+	    TText *omid_text = new TText (x1+0.5*gv_sizex, y1+0.7*gv_sizey, omid_string);
+	    omid_text->SetTextSize(0.012);
 	    omid_text->SetTextAlign(22);
 	    omid_text_v.push_back(omid_text);
 
 	    TString omnum_string = Form("%03d", omnum);
-	    TText *omnum_text = new TText (x1+0.5*gv_sizex, y1+0.333*gv_sizey, omnum_string);
+	    TText *omnum_text = new TText (x1+0.5*gv_sizex, y1+0.3*gv_sizey, omnum_string);
 	    omnum_text->SetTextSize(0.02);
 	    omnum_text->SetTextAlign(22);
 	    omnum_text_v.push_back(omnum_text);
 
-	    TText *content_text = new TText (x1+0.5*gv_sizex, y1+0.333*gv_sizey, "");
+	    TText *content_text = new TText (x1+0.5*gv_sizex, y1+0.3*gv_sizey, "");
 	    content_text->SetTextSize(0.02);
 	    content_text->SetTextAlign(22);
 	    content_text_v.push_back(content_text);
@@ -212,12 +212,13 @@ namespace sndisplay
 
       } // for gv_side
 
-      it_label = new TText (spacerx,     spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.25*gv_sizey, "  ITALY");
-      it_label->SetTextSize(0.036);
+      it_label = new TText (spacerx+xw_sizex, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.5*gv_sizey, "  ITALY");
+      it_label->SetTextSize(0.028);
+      it_label->SetTextAlign(22);
 
-      // fr_label = new TText (0.5 + spacerx, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.25*gv_sizey, "FRANCE");
-      fr_label = new TText (spacerx, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.25*gv_sizey, "FRANCE");
-      fr_label->SetTextSize(0.036);
+      fr_label = new TText (spacerx+xw_sizex, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.5*gv_sizey, "FRANCE");
+      fr_label->SetTextSize(0.028);
+      fr_label->SetTextAlign(22);
 
       const Int_t nRGBs = 6;
       Double_t stops[nRGBs] = { 0.00, 0.20, 0.40, 0.60, 0.80, 1.00 };
@@ -264,10 +265,10 @@ namespace sndisplay
     void draw()
     {
       if (canvas_it == NULL)
-	canvas_it = new TCanvas (Form("C_it_%s",calorimeter_name.Data()), Form("%s (IT side)",calorimeter_name.Data()), 900, 600);
+	canvas_it = new TCanvas (Form("C_it_%s",calorimeter_name.Data()), Form("%s (IT side)",calorimeter_name.Data()), 1200, 800);
 
       if (canvas_fr == NULL)
-	canvas_fr = new TCanvas (Form("C_fr_%s",calorimeter_name.Data()), Form("%s (FR side)",calorimeter_name.Data()), 900, 600);
+	canvas_fr = new TCanvas (Form("C_fr_%s",calorimeter_name.Data()), Form("%s (FR side)",calorimeter_name.Data()), 1200, 800);
 
       if (draw_content)
 	{
