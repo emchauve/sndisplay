@@ -2,8 +2,9 @@
 #include "TCanvas.h"
 #include "TColor.h"
 #include "TEllipse.h"
+#include "TH2D.h"
 #include "TLine.h"
-#include "TPad.h"
+#include "TPaletteAxis.h"
 #include "TRandom.h"
 #include "TSystem.h"
 #include "TString.h"
@@ -20,12 +21,13 @@ namespace sndisplay
   class calorimeter
   {
   public:
-    calorimeter (const char *n = "") : calorimeter_name (n)
+    calorimeter (const char *n = "", bool with_palette=false) : calorimeter_name (n)
     {
-      canvas_it = NULL;
-      canvas_fr = NULL;
+      canvas_it = nullptr;
+      canvas_fr = nullptr;
 
-      draw_omid = false;
+      // draw by default the OM ID
+      draw_omid = true;
       draw_omnum = false;
       draw_content = false;
       draw_content_format = "%.0f";
@@ -35,14 +37,14 @@ namespace sndisplay
 
       range_min = range_max = -1;
 
-      const double spacerx = 0.0125;
-      const double spacery = 0.0250;
+      const double spacerx = 0.0100;
+      const double spacery = 0.0125;
 
       const double mw_sizey = (1-4*spacery)/(13+2);
       const double gv_sizey = mw_sizey;
-      const double xw_sizey = mw_sizey*13./16.; // (1-4*spacery-2*gv_sizey)/16;
+      const double xw_sizey = mw_sizey*13/16.;
 
-      const double mw_sizex = (1-4*spacerx)/(20+4); // (0.5-4*spacerx)/(20+4);
+      const double mw_sizex = with_palette ? (1-5*spacerx)/(20+4+1.5) : (1-4*spacerx)/(20+4);
       const double gv_sizex = mw_sizex*20./16.;
       const double xw_sizex = mw_sizex;
       
@@ -72,13 +74,15 @@ namespace sndisplay
 
 	    TString omid_string = Form("M:%1d.%d.%d", mw_side, mw_column, mw_row);
 	    TText *omid_text = new TText (x1+0.5*mw_sizex, y1+0.7*mw_sizey, omid_string);
-	    omid_text->SetTextSize(0.012);
+	    omid_text->SetTextFont(42);
+	    omid_text->SetTextSize(0.013);
 	    omid_text->SetTextAlign(22);
 	    omid_text_v.push_back(omid_text);
 
 	    TString omnum_string = Form("%03d", omnum);
-	    TText *omnum_text = new TText (x1+0.5*mw_sizex, y1+0.3*mw_sizey, omnum_string);
-	    omnum_text->SetTextSize(0.02);
+	    TText *omnum_text = new TText (x1+0.5*mw_sizex, y1+0.7*mw_sizey, omnum_string);
+	    omnum_text->SetTextFont(42);
+	    omnum_text->SetTextSize(0.013);
 	    omnum_text->SetTextAlign(22);
 	    omnum_text_v.push_back(omnum_text);
 
@@ -137,14 +141,16 @@ namespace sndisplay
 
 	    TString omid_string = Form("X:%1d.%1d.%1d.%d", xw_side, xw_wall, xw_column, xw_row);
 	    TText *omid_text = new TText (x1+0.5*mw_sizex, y1+0.7*xw_sizey, omid_string);
-	    omid_text->SetTextSize(0.012);
+	    omid_text->SetTextFont(42);
+	    omid_text->SetTextSize(0.013);
 	    omid_text->SetTextAlign(22);
 	    omid_text_v.push_back(omid_text);
 
 	    TString omnum_string = Form("%03d", omnum);
-	    TText *omnum_text = new TText (x1+0.5*xw_sizex, y1+0.3*xw_sizey, omnum_string);
- 	    omnum_text->SetTextSize(0.02);
- 	    omnum_text->SetTextAlign(22);
+	    TText *omnum_text = new TText (x1+0.5*xw_sizex, y1+0.7*xw_sizey, omnum_string);
+	    omnum_text->SetTextFont(42);
+	    omnum_text->SetTextSize(0.013);
+	    omnum_text->SetTextAlign(22);
 	    omnum_text_v.push_back(omnum_text);
 
 	    TText *content_text = new TText (x1+0.5*xw_sizex, y1+0.3*xw_sizey, "");
@@ -191,13 +197,15 @@ namespace sndisplay
 
 	    TString omid_string = Form("G:%1d.%1d.%d", gv_side, gv_wall, gv_column);
 	    TText *omid_text = new TText (x1+0.5*gv_sizex, y1+0.7*gv_sizey, omid_string);
-	    omid_text->SetTextSize(0.012);
+	    omid_text->SetTextFont(42);
+	    omid_text->SetTextSize(0.013);
 	    omid_text->SetTextAlign(22);
 	    omid_text_v.push_back(omid_text);
 
 	    TString omnum_string = Form("%03d", omnum);
-	    TText *omnum_text = new TText (x1+0.5*gv_sizex, y1+0.3*gv_sizey, omnum_string);
-	    omnum_text->SetTextSize(0.02);
+	    TText *omnum_text = new TText (x1+0.5*gv_sizex, y1+0.7*gv_sizey, omnum_string);
+	    omnum_text->SetTextFont(42);
+	    omnum_text->SetTextSize(0.013);
 	    omnum_text->SetTextAlign(22);
 	    omnum_text_v.push_back(omnum_text);
 
@@ -212,24 +220,62 @@ namespace sndisplay
 
       } // for gv_side
 
-      it_label = new TText (spacerx+xw_sizex, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.5*gv_sizey, "  ITALY");
-      it_label->SetTextSize(0.028);
-      it_label->SetTextAlign(22);
+      label_it = new TText (spacerx+xw_sizex, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.5*gv_sizey, "  ITALY");
+      label_it->SetTextSize(0.028);
+      label_it->SetTextAlign(22);
 
-      fr_label = new TText (spacerx+xw_sizex, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.5*gv_sizey, "FRANCE");
-      fr_label->SetTextSize(0.028);
-      fr_label->SetTextAlign(22);
+      label_fr = new TText (spacerx+xw_sizex, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.5*gv_sizey, "FRANCE");
+      label_fr->SetTextSize(0.028);
+      label_fr->SetTextAlign(22);
 
       const Int_t nRGBs = 6;
       Double_t stops[nRGBs] = { 0.00, 0.20, 0.40, 0.60, 0.80, 1.00 };
       Double_t red[nRGBs]   = { 0.25, 0.00, 0.20, 1.00, 1.00, 0.90 };
       Double_t green[nRGBs] = { 0.25, 0.80, 1.00, 1.00, 0.80, 0.00 };
       Double_t blue[nRGBs]  = { 1.00, 1.00, 0.20, 0.00, 0.00, 0.00 };
-      
-      palette_index = TColor::CreateGradientColorTable(nRGBs, stops, red, green, blue, 100);
-    };
 
-    ~calorimeter() {};
+      palette_index = TColor::CreateGradientColorTable(nRGBs, stops, red, green, blue, 100);
+
+      palette_histo = nullptr;
+      palette_axis = nullptr;
+
+      if (with_palette)
+	{
+	  const double palette_sizey = mw_sizey*13;
+	  const double palette_sizex = mw_sizex*1.5;
+
+	  palette_histo = new TH2D(Form("%s_palette_histo",calorimeter_name.Data()), "", 1, 0, 1, 1, 0, 1);
+	  palette_histo->GetZaxis()->SetNdivisions(509);
+	  palette_histo->GetZaxis()->SetLabelSize(0.024);
+	  palette_histo->GetZaxis()->SetLabelFont(62);
+	  palette_histo->SetMinimum(range_min);
+	  palette_histo->SetMaximum(range_max);
+	  palette_histo->SetContour(100);
+
+	  // the constructor TPaletteAxis(x1, y1, x2, y2, histo)
+	  // crashing due to no canvas existing (gPad = nullptr)
+	  palette_axis = new TPaletteAxis;
+	  palette_axis->SetHistogram(palette_histo);
+	  palette_axis->SetX1NDC(1-spacerx-palette_sizex*(5./6)); // position tuning
+	  palette_axis->SetY1NDC(spacery+gv_sizey+spacery+palette_sizey/8.);
+	  palette_axis->SetX2NDC(1-spacerx-palette_sizex*(3./6)); // position tuning
+	  palette_axis->SetY2NDC(1-palette_axis->GetY1NDC());
+	  palette_axis->SetY2NDC(1-palette_axis->GetY1NDC());
+	}
+
+    }; // calorimeter()
+
+    ~calorimeter()
+    {
+      if (palette_axis) delete palette_axis;
+      if (palette_histo) delete palette_histo;
+
+      delete label_fr;
+      delete label_it;
+
+      delete canvas_fr;
+      delete canvas_it;
+    };
     
     static const int nmwall = 520;
     static const int nxwall = 128;
@@ -252,11 +298,11 @@ namespace sndisplay
       range_min = zmin; range_max = zmax;
     }
 
-    void draw_omid_label() {
-      draw_omid = true;}
+    void draw_omid_label (bool draw=true) {
+      draw_omid = draw;}
 
-    void draw_omnum_label() {
-      draw_omnum = true;}
+    void draw_omnum_label(bool draw=true) {
+      draw_omnum = draw;}
  
     void draw_content_label(const char *format="%.0f") {
       draw_content_format = TString(format);
@@ -264,13 +310,16 @@ namespace sndisplay
 
     void draw()
     {
-      if (canvas_it == NULL)
-	canvas_it = new TCanvas (Form("C_it_%s",calorimeter_name.Data()), Form("%s (IT side)",calorimeter_name.Data()), 1200, 800);
+      const double canvas_width  = palette_axis ? 1280 : 1200;
+      const double canvas_height = 780;
 
-      if (canvas_fr == NULL)
-	canvas_fr = new TCanvas (Form("C_fr_%s",calorimeter_name.Data()), Form("%s (FR side)",calorimeter_name.Data()), 1200, 800);
+      if (canvas_it == nullptr)
+	canvas_it = new TCanvas (Form("%s_canvas_it",calorimeter_name.Data()), Form("%s (IT side)",calorimeter_name.Data()), canvas_width, canvas_height);
 
-      if (draw_content)
+      if (canvas_fr == nullptr)
+	canvas_fr = new TCanvas (Form("%s_canvas_fr",calorimeter_name.Data()), Form("%s (FR side)",calorimeter_name.Data()), canvas_width, canvas_height);
+
+      if (draw_content && !text_was_set)
 	{
 	  for (int omnum=0; omnum<nb_om; ++omnum)
 	    {
@@ -291,11 +340,12 @@ namespace sndisplay
 	for (int mw_row=0; mw_row<13; ++mw_row) {
 	  int id = mw_side*20*13 + mw_column*13 + mw_row;
 	  ombox[id]->Draw("l");
-	  if (draw_omid) // if (((mw_column % 5) == 0) || (mw_column == 19))
+	  if (draw_omid)
 	    omid_text_v[id]->Draw();
-	  if (draw_omnum) omnum_text_v[id]->Draw();
-	  if (draw_content && content[id]!=0) content_text_v[id]->Draw();
-	  // else if (draw_omid_num) omid_num_text_v[id]->Draw();
+	  else if (draw_omnum)
+	    omnum_text_v[id]->Draw();
+	  if ((draw_content && content[id]!=0) || text_was_set)
+	    content_text_v[id]->Draw();
 	}
       }
       
@@ -305,11 +355,12 @@ namespace sndisplay
 	  for (int xw_row=0; xw_row<16; ++xw_row) {
 	    int id = 520 + xw_side*2*2*16 + xw_wall*2*16 + xw_column*16 + xw_row;
 	    ombox[id]->Draw("l");
-	    if (draw_omid) // if ((xw_column % 5) == 0)
+	    if (draw_omid)
 	      omid_text_v[id]->Draw();
-	    if (draw_omnum) omnum_text_v[id]->Draw();
-	    if (draw_content && content[id]!=0) content_text_v[id]->Draw();
-	    // else if (draw_omid_num) omid_num_text_v[id]->Draw();
+	    else if (draw_omnum)
+	      omnum_text_v[id]->Draw();
+	    if ((draw_content && content[id]!=0) || text_was_set)
+	      content_text_v[id]->Draw();
 	  }
 	}
       }
@@ -321,14 +372,17 @@ namespace sndisplay
 	  ombox[id]->Draw("l");
 	  if (draw_omid) // if ((gv_column % 5) == 0)
 	    omid_text_v[id]->Draw();
-	  if (draw_omnum) omnum_text_v[id]->Draw();
-	  if (draw_content && content[id]!=0) content_text_v[id]->Draw();
-	  // else if (draw_omid_num) omid_num_text_v[id]->Draw();
+	  else if (draw_omnum)
+	    omnum_text_v[id]->Draw();
+	  if ((draw_content && content[id]!=0) || text_was_set)
+	    content_text_v[id]->Draw();
 	}
       }
 
-      it_label->Draw();
-      
+      label_it->Draw();
+
+      if (palette_axis) palette_axis->Draw();
+
       canvas_it->SetEditable(false);
 
       /////////////
@@ -343,11 +397,12 @@ namespace sndisplay
 	for (int mw_row=0; mw_row<13; ++mw_row) {
 	  int id = mw_side*20*13 + mw_column*13 + mw_row;
 	  ombox[id]->Draw("l");
-	  if (draw_omid) // if (((mw_column % 5) == 0) || (mw_column == 19))
+	  if (draw_omid)
 	      omid_text_v[id]->Draw();
-	  if (draw_omnum) omnum_text_v[id]->Draw();
-	  if (draw_content && content[id]!=0) content_text_v[id]->Draw();
-	  // else if (draw_omid_num) omid_num_text_v[id]->Draw();
+	  else if (draw_omnum)
+	    omnum_text_v[id]->Draw();
+	  if ((draw_content && content[id]!=0) || text_was_set)
+	    content_text_v[id]->Draw();
 	}
       }
       
@@ -357,11 +412,12 @@ namespace sndisplay
 	  for (int xw_row=0; xw_row<16; ++xw_row) {
 	    int id = 520 + xw_side*2*2*16 + xw_wall*2*16 + xw_column*16 + xw_row;
 	    ombox[id]->Draw("l");
-	    if (draw_omid) // if ((xw_column % 5) == 0)
+	    if (draw_omid)
 	      omid_text_v[id]->Draw();
-	    if (draw_omnum) omnum_text_v[id]->Draw();
-	    if (draw_content && content[id]!=0) content_text_v[id]->Draw();
-	    // else if (draw_omid_num) omid_num_text_v[id]->Draw();
+	    else if (draw_omnum)
+	      omnum_text_v[id]->Draw();
+	    if ((draw_content && content[id]!=0) || text_was_set)
+	      content_text_v[id]->Draw();
 	  }
 	}
       }
@@ -371,16 +427,22 @@ namespace sndisplay
 	for (int gv_column=0; gv_column<16; ++gv_column) {
 	  int id = 520 + 128 + gv_side*2*16 + gv_wall*16 + gv_column;
 	  ombox[id]->Draw("l");
-	  if (draw_omid) // if ((gv_column % 5) == 0)
+	  if (draw_omid)
 	    omid_text_v[id]->Draw();
-	  if (draw_omnum) omnum_text_v[id]->Draw();
-	  if (draw_content && content[id]!=0) content_text_v[id]->Draw();
-	  // else if (draw_omid_num) omid_num_text_v[id]->Draw();
+	  else if (draw_omnum)
+	    omnum_text_v[id]->Draw();
+	  if ((draw_content && content[id]!=0) || text_was_set)
+	    content_text_v[id]->Draw();
 	}
       }
 
-      fr_label->Draw();
+      label_fr->Draw();
+
+      if (palette_axis) palette_axis->Draw();
+
       canvas_fr->SetEditable(false);
+
+      text_was_set = false;
 
       //
 
@@ -411,7 +473,9 @@ namespace sndisplay
 
     void setcontent (int omnum, float value)
     {
-      content[omnum] = value;
+      if ((omnum >= 0) && (omnum < nb_om))
+	content[omnum] = value;
+      else printf("*** wrong OM NUM\n");
     }
     
     void setcontent (int om_side, int om_wall, int om_column, int om_row, float value)
@@ -437,14 +501,50 @@ namespace sndisplay
       content[omnum] = value;
     }
 
+    void setcolor (int omnum, Color_t color)
+    {
+      if ((omnum >= 0) && (omnum < nb_om))
+	{
+	  ombox[omnum]->SetFillColor(color);
+	  color_was_set = true;
+	}
+      else printf("*** wrong OM NUM\n");
+    }
+
+    void settext (int omnum, const char *text)
+    {
+      if ((omnum >= 0) && (omnum < nb_om))
+	{
+	  TText *ttext = content_text_v[omnum];
+	  ttext->SetText(ttext->GetX(), ttext->GetY(), text);
+	  text_was_set = true;
+	}
+      else printf("*** wrong OM NUM\n");
+    }
+
+    void setmwcolor (int om_side, int om_column, int om_row, Color_t color)
+    {
+      setcolor(260*om_side + 13*om_column + om_row, color);
+    }
+
+    void setmwtext (int om_side, int om_column, int om_row, const char *text)
+    {
+      settext(260*om_side + 13*om_column + om_row, text);
+    }
     
     void fill (int omnum, float value=1)
     {
       setcontent(omnum, content[omnum]+value);
     }
 
-    void update()
+    void update ()
     {
+      if (color_was_set)
+	{
+	  color_was_set = false;
+	  return;
+	}
+
       // autoset Z range [0, content_max]
       // unless setrange() has been called
 
@@ -483,6 +583,13 @@ namespace sndisplay
 	    }
 	}
 
+      if (palette_axis)
+	{
+	  palette_histo->SetMinimum(content_min);
+	  palette_histo->SetMaximum(content_max);
+	  palette_histo->SetContour(100);
+	}
+
       canvas_it->Modified();
       canvas_it->Update();
 
@@ -494,30 +601,32 @@ namespace sndisplay
     
     TString calorimeter_name;
 
-    float range_min, range_max;
-
-    std::vector<float> content;
-    std::vector<TBox*>   ombox;
-
+    // draw options
     bool draw_omid;
     bool draw_omnum;
     bool draw_content;
     TString draw_content_format;
+    float range_min, range_max;
 
-    std::vector<TText*> omid_text_v;
-    std::vector<TText*> omnum_text_v;
-    std::vector<TText*> content_text_v;
-
-    TText *it_label;
-    TText *fr_label;
+    bool color_was_set;
+    bool text_was_set;
     
     TCanvas *canvas_it;
     TCanvas *canvas_fr;
 
-    TPad *pad_italy;
-    TPad *pad_french;
+    TText *label_it;
+    TText *label_fr;
 
     int palette_index;
+    TH2D *palette_histo;
+    TPaletteAxis *palette_axis;
+
+    std::vector<float> content;
+
+    std::vector<TBox*>  ombox;
+    std::vector<TText*> omid_text_v;
+    std::vector<TText*> omnum_text_v;
+    std::vector<TText*> content_text_v;
 
   }; // sndisplay::calorimeter class
 
@@ -530,7 +639,7 @@ namespace sndisplay
   public:
     tracker (const char *n = "") : tracker_name (n)
     {
-      canvas = NULL;
+      canvas = nullptr;
 
       draw_cellid = false;
       draw_cellnum = false;
@@ -609,12 +718,12 @@ namespace sndisplay
 
       } // for cell_side
 
-      it_label = new TText (spacerx, 2.25*spacery+2*9*cell_sizey, "ITALY");
-      it_label->SetTextSize(0.036);
+      label_it = new TText (spacerx, 2.25*spacery+2*9*cell_sizey, "ITALY");
+      label_it->SetTextSize(0.036);
 
-      // fr_label = new TText (0.5 + spacerx, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.25*gv_sizey, "FRANCE");
-      fr_label = new TText (spacerx, 0.25*spacery, "FRANCE");
-      fr_label->SetTextSize(0.036);
+      // label_fr = new TText (0.5 + spacerx, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.25*gv_sizey, "FRANCE");
+      label_fr = new TText (spacerx, 0.25*spacery, "FRANCE");
+      label_fr->SetTextSize(0.036);
 
       const Int_t nRGBs = 6;
       Double_t stops[nRGBs] = { 0.00, 0.20, 0.40, 0.60, 0.80, 1.00 };
@@ -646,7 +755,7 @@ namespace sndisplay
 
     void draw()
     {
-      if (canvas == NULL)
+      if (canvas == nullptr)
 	canvas = new TCanvas (Form("C_%s",tracker_name.Data()), tracker_name, 1800, 360);
 
       if (draw_content)
@@ -688,8 +797,8 @@ namespace sndisplay
       for (TText *row_text : row_text_v)
 	row_text->Draw();
 
-      it_label->Draw();
-      fr_label->Draw();
+      label_it->Draw();
+      label_fr->Draw();
 
       canvas->SetEditable(false);
 
@@ -798,8 +907,8 @@ namespace sndisplay
     std::vector<TText*> content_text_v;
     std::vector<TText*> row_text_v;
 
-    TText *it_label;
-    TText *fr_label;
+    TText *label_it;
+    TText *label_fr;
 
     TCanvas *canvas;
 
@@ -958,7 +1067,7 @@ namespace sndisplay
 
     void draw_top()
     {
-      if (demonstrator_canvas == NULL)
+      if (demonstrator_canvas == nullptr)
 	demonstrator_canvas = new TCanvas (Form("C_demonstrator_%s",demonstrator_name.Data()), Form("%s",demonstrator_name.Data()), 1800, 450);
       else demonstrator_canvas->cd();
 
@@ -1158,39 +1267,88 @@ namespace sndisplay
 
 } // sndisplay namespace
 
-// sndisplay_test(): example of sndisplay::calorimeter usage
+////////////////////////////////////////////////////////////////
 
-void sndisplay_test ()
+// sndisplay_calorimeter_test_values()
+// => sndisplay::calorimeter usage by filling OMs content with random value
+
+void sndisplay_calorimeter_test_values (bool with_palette = true)
 {
-  sndisplay::calorimeter *sncalo = new sndisplay::calorimeter;
+  sndisplay::calorimeter *sncalo = new sndisplay::calorimeter ("sndiplay_test", with_palette);
 
-  sncalo->draw_omid_label();
   sncalo->draw_content_label("%.1f");
 
   TRandom trand;
 
-  for (int omnum=0; omnum<520; ++omnum)
-    sncalo->setcontent(omnum, trand.Gaus(100, 10));  
+  for (int omnum=0; omnum<520; ++omnum) // MW
+    sncalo->setcontent(omnum, trand.Gaus(85, 5));
 
-  for (int omnum=520; omnum<712; ++omnum)
-    sncalo->setcontent(omnum, trand.Gaus(50, 10));
+  for (int omnum=520; omnum<648; ++omnum) // XW
+    sncalo->setcontent(omnum, trand.Gaus(50, 5));
+
+  for (int omnum=648; omnum<712; ++omnum) // GV
+    sncalo->setcontent(omnum, trand.Gaus(20, 5));
+
+  sncalo->setrange(0, 100); // to force z axis range
 
   sncalo->draw();
+
+  sncalo->canvas_it->SaveAs("sndisplay-calorimeter-test-it.png");
+  sncalo->canvas_fr->SaveAs("sndisplay-calorimeter-test-fr.png");
+
+  // merge IT and FR canvas side by side using image magick (if installed)
+  gSystem->Exec("which convert > /dev/null && convert sndisplay-calorimeter-test-it.png sndisplay-calorimeter-test-fr.png +append sndisplay-calorimeter-test.png");
 }
 
-// sndisplay_omnum(): build the detector map
-// to show the conversion OM_ID <=> OM_NUM
+////////////////////////////////////////////////////////////////
 
-void sndisplay_omnum ()
+// sndisplay_calorimeter_test_status()
+// => sndisplay::calorimeter usage by filling color and/or text content
+
+void sndisplay_calorimeter_test_status ()
 {
-  sndisplay::calorimeter *sncalo = new sndisplay::calorimeter;
+  sndisplay::calorimeter *sncalo = new sndisplay::calorimeter ("dead_channel");
 
-  sncalo->draw_omid_label();
-  sncalo->draw_omnum_label();
+  // OMs with "white photocathode PMT"
+  sncalo->setmwcolor(0,  5, 9, kOrange+1); sncalo->setmwtext(0,  5, 9, "WP");
+  sncalo->setmwcolor(0,  6, 2, kOrange+1); sncalo->setmwtext(0,  6, 2, "WP");
+  sncalo->setmwcolor(0,  7, 7, kOrange+1); sncalo->setmwtext(0,  7, 7, "WP");
+  sncalo->setmwcolor(0,  9, 2, kOrange+1); sncalo->setmwtext(0,  9, 2, "WP");
+  sncalo->setmwcolor(0, 10, 6, kOrange+1); sncalo->setmwtext(0, 10, 6, "WP");
+  sncalo->setmwcolor(1,  9, 5, kOrange+1); sncalo->setmwtext(1,  9, 5, "WP");
+  sncalo->setmwcolor(1, 15, 6, kOrange+1); sncalo->setmwtext(1, 15, 6, "WP");
 
   sncalo->draw();
+
+  sncalo->canvas_it->SaveAs("sndisplay-calorimeter-status-it.png");
+  sncalo->canvas_fr->SaveAs("sndisplay-calorimeter-status-fr.png");
+
+  // merge IT and FR canvas side by side using image magick (if installed)
+  gSystem->Exec("which convert > /dev/null && convert sndisplay-calorimeter-status-it.png sndisplay-calorimeter-status-fr.png +append sndisplay-calorimeter-status.png");
 }
 
+////////////////////////////////////////////////////////////////
+
+// sndisplay_calorimeter_test_omnum()
+// => sndisplay::calorimeter usage to show the conversion OM_ID <=> OM_NUM
+
+void sndisplay_calorimeter_test_omnum ()
+{
+  sndisplay::calorimeter *sncalo = new sndisplay::calorimeter ("omid_vs_omnum");
+
+  for (int omnum=0; omnum<712; ++omnum)
+    sncalo->settext(omnum, Form("%d", omnum));
+
+  sncalo->draw();
+
+  sncalo->canvas_it->SaveAs("sndisplay-calorimeter-omnum-it.png");
+  sncalo->canvas_fr->SaveAs("sndisplay-calorimeter-omnum-fr.png");
+
+  // merge IT and FR canvas side by side using image magick (if installed)
+  gSystem->Exec("which convert > /dev/null  && convert sndisplay-calorimeter-omnum-it.png sndisplay-calorimeter-omnum-fr.png +append sndisplay-calorimeter-omnum.png");
+}
+
+////////////////////////////////////////////////////////////////
 
 void sndisplay_cellnum ()
 {
@@ -1207,8 +1365,16 @@ void sndisplay_cellnum ()
   sntracker->draw();
 }
 
+////////////////////////////////////////////////////////////////
+
+// main() can be compiled with (ROOT's HistPainter library must be added!)
+// g++ sndisplay.cc -o sndisplay `root-config --cflags --libs` -lHistPainter
+
 int main()
 {
-  sndisplay_test();
+  sndisplay_calorimeter_test_values();
+  sndisplay_calorimeter_test_status();
+  sndisplay_calorimeter_test_omnum();
+
   return 0;
 }
