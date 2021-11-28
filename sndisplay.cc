@@ -37,7 +37,7 @@ namespace sndisplay
 
       range_min = range_max = -1;
 
-      const double spacerx = 0.0100;
+      const double spacerx = with_palette ? 0.0093458 : 0.0100;
       const double spacery = 0.0125;
 
       const double mw_sizey = (1-4*spacery)/(13+2);
@@ -310,14 +310,35 @@ namespace sndisplay
 
     void draw()
     {
-      const double canvas_width  = palette_axis ? 1280 : 1200;
-      const double canvas_height = 780;
+      const int canvas_width  = palette_axis ? 1284 : 1200;
+      const int canvas_height = 780;
 
       if (canvas_it == nullptr)
-	canvas_it = new TCanvas (Form("%s_canvas_it",calorimeter_name.Data()), Form("%s (IT side)",calorimeter_name.Data()), canvas_width, canvas_height);
+	{
+	  canvas_it = new TCanvas (Form("%s_canvas_it",calorimeter_name.Data()), Form("%s (IT side)",calorimeter_name.Data()), canvas_width, canvas_height);
+
+	  // force canvas exact size
+	  int decoration_width = canvas_width - canvas_it->GetWw();
+	  int decoration_height = canvas_height - canvas_it->GetWh();
+	  canvas_it->SetWindowSize(canvas_width+decoration_width, canvas_height+decoration_height);
+
+	  // preserve width/height ratio in case of resizing
+	  canvas_it->SetFixedAspectRatio();
+	}
 
       if (canvas_fr == nullptr)
-	canvas_fr = new TCanvas (Form("%s_canvas_fr",calorimeter_name.Data()), Form("%s (FR side)",calorimeter_name.Data()), canvas_width, canvas_height);
+	{
+	  canvas_fr = new TCanvas (Form("%s_canvas_fr",calorimeter_name.Data()), Form("%s (FR side)",calorimeter_name.Data()), canvas_width, canvas_height);
+	  canvas_fr->SetWindowSize(canvas_width+(canvas_width-canvas_fr->GetWw()), canvas_height+(canvas_height-canvas_fr->GetWh()));
+
+	  // force canvas exact size
+	  int decoration_width = canvas_width - canvas_fr->GetWw();
+	  int decoration_height = canvas_height - canvas_fr->GetWh();
+	  canvas_fr->SetWindowSize(canvas_width+decoration_width, canvas_height+decoration_height);
+
+	  // preserve width/height ratio in case of resizing
+	  canvas_fr->SetFixedAspectRatio();
+	}
 
       if (draw_content && !text_was_set)
 	{
