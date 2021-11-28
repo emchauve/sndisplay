@@ -722,6 +722,12 @@ namespace sndisplay
       else printf("*** wrong cell ID\n");
     }
 
+    void setcolor (int cell_side, int cell_row, int cell_layer, Color_t color)
+    {
+      unsigned int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
+      setcolor(cell_num, color);
+    }
+
     void fill (int cellnum, float value=1)
     {
       setcontent(cellnum, content[cellnum]+value);
