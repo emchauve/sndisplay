@@ -78,7 +78,7 @@ namespace sndisplay
       const double mw_sizex = with_palette ? (1-5*spacerx)/(20+4+1.5) : (1-4*spacerx)/(20+4);
       const double gv_sizex = mw_sizex*20./16.;
       const double xw_sizex = mw_sizex;
-      
+
       //////////////////////////
       // MWALL initialisation //
       //////////////////////////
@@ -294,8 +294,8 @@ namespace sndisplay
 
     ~calorimeter()
     {
-      if (palette_axis) delete palette_axis;
-      if (palette_histo) delete palette_histo;
+      // if (palette_axis) delete palette_axis;
+      // if (palette_histo) delete palette_histo;
 
       delete label_fr;
       delete label_it;
@@ -303,7 +303,7 @@ namespace sndisplay
       delete canvas_fr;
       delete canvas_it;
     };
-    
+
     static const int nmwall = 520;
     static const int nxwall = 128;
     static const int ngveto =  64;
@@ -495,13 +495,15 @@ namespace sndisplay
     }
 
     
-    void reset() {
+    void reset()
+    {
       for (int omnum=0; omnum<nb_om; ++omnum)
-	content[omnum] = 0;
+	{
+	  content[omnum] = 0;
+	  content_text_v[omnum].Clear();
+	  ombox[omnum].SetFillColor(0);
+	}
 
-      for (int omnum=0; omnum<nb_om; ++omnum)
-	ombox[omnum].SetFillColor(0);
-      
       canvas_it->Modified();
       canvas_it->Update();
 
@@ -618,7 +620,7 @@ namespace sndisplay
 	    ombox[omnum].SetFillColor(0);
 	}
 
-      if (draw_content)
+      if (draw_content && !text_was_set)
 	{
 	  for (int omnum=0; omnum<nb_om; ++omnum)
 	    settext(omnum, Form(draw_content_format.Data(), content[omnum]));
@@ -677,26 +679,25 @@ namespace sndisplay
   class tracker
   {
   public:
-    tracker (const char *n = "") : tracker_name (n)
+    tracker (const char *n = "", bool with_palette=false) : tracker_name (n)
     {
       canvas = nullptr;
 
+      // do not draw by default the CELL ID
       draw_cellid = false;
       draw_cellnum = false;
       draw_content = false;
       draw_content_format = "%.0f";
 
-      range_min = range_max = -1;
-      
       for (int cellnum=0; cellnum<nb_cell; ++cellnum)
 	content.push_back(0);
 
       range_min = range_max = -1;
 
-      const double spacerx = 0.0125;
+      const double spacerx = with_palette ? 0.0082 : 0.0082;
       const double spacery = 0.0500;
 
-      const double cell_sizex = (1-2*spacerx)/113.0;
+      const double cell_sizex = with_palette ? (1-3*spacerx)/(113.+2) : (1-2*spacerx)/113.0;
       const double cell_sizey = (1-3*spacery)/(9*2);
 
       //////////////////////////
@@ -722,51 +723,91 @@ namespace sndisplay
 	    double x2 = x1 + cell_sizex;
 	    double y2 = y1 + cell_sizey;
 
-	    TBox *box = new TBox(x1, y1, x2, y2);
-	    box->SetFillColor(0);
-	    box->SetLineWidth(1);
+	    TBox box (x1, y1, x2, y2);
+	    box.SetFillColor(0);
+	    box.SetLineWidth(1);
 	    cellbox.push_back(box);
 
 	    TString cellid_string = Form("M:%1d.%d.%d", cell_side, cell_layer, cell_row);
-	    TText *cellid_text = new TText (x1+0.5*cell_sizex, y1+0.667*cell_sizey, cellid_string);
-	    cellid_text->SetTextSize(0.01);
-	    cellid_text->SetTextAlign(22);
+	    TText cellid_text (x1+0.5*cell_sizex, y1+0.667*cell_sizey, cellid_string);
+	    cellid_text.SetTextSize(0.01);
+	    cellid_text.SetTextAlign(22);
 	    cellid_text_v.push_back(cellid_text);
 
 	    TString cellnum_string = Form("%03d", cellnum);
-	    TText *cellnum_text = new TText (x1+0.5*cell_sizex, y1+0.333*cell_sizey, cellnum_string);
-	    cellnum_text->SetTextSize(0.01);
-	    cellnum_text->SetTextAlign(22);
+	    TText cellnum_text (x1+0.5*cell_sizex, y1+0.333*cell_sizey, cellnum_string);
+	    cellnum_text.SetTextSize(0.01);
+	    cellnum_text.SetTextAlign(22);
 	    cellnum_text_v.push_back(cellnum_text);
 
-	    TText *content_text = new TText (x1+0.5*cell_sizex, y1+0.333*cell_sizey, "");
-	    content_text->SetTextSize(0.01);
-	    content_text->SetTextAlign(22);
+	    TText content_text (x1+0.5*cell_sizex, y1+0.333*cell_sizey, "");
+	    content_text.SetTextSize(0.01);
+	    content_text.SetTextAlign(22);
 	    content_text_v.push_back(content_text);
 
 	    } // for cell_layer
 
 	    if ((cell_row %5) == 0)
 	      {
-		TText *row_text = new TText (x1+0.5*cell_sizex, 0.5, Form("%d",cell_row));
-		row_text->SetTextSize(0.03);
-		row_text->SetTextAngle(90);
-		row_text->SetTextAlign(22);
+		TText row_text (x1+0.5*cell_sizex, 0.5, Form("%d",cell_row));
+		row_text.SetTextSize(0.03);
+		row_text.SetTextAngle(90);
+		row_text.SetTextAlign(22);
 		row_text_v.push_back(row_text);
 	      }
 	  } // for cell_row
 
       } // for cell_side
 
-      label_it = new TText (spacerx, 2.25*spacery+2*9*cell_sizey, "ITALY");
+      label_it = new TText (spacerx, 2.5*spacery+2*9*cell_sizey, "ITALY");
       label_it->SetTextSize(0.036);
+      label_it->SetTextAlign(12);
 
       // label_fr = new TText (0.5 + spacerx, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.25*gv_sizey, "FRANCE");
-      label_fr = new TText (spacerx, 0.25*spacery, "FRANCE");
+      label_fr = new TText (spacerx, 0.5*spacery, "FRANCE");
       label_fr->SetTextSize(0.036);
-    };
+      label_fr->SetTextAlign(12);
 
-    ~tracker() {};
+      palette_histo = nullptr;
+      palette_axis = nullptr;
+
+      if (with_palette)
+	{
+	  const double palette_sizex = 2*cell_sizex;
+	  const double palette_sizey = cell_sizey*9*2 + spacery;
+
+	  palette_histo = new TH2D(Form("%s_palette_histo",tracker_name.Data()), "", 1, 0, 1, 1, 0, 1);
+	  palette_histo->GetZaxis()->SetNdivisions(509);
+	  palette_histo->GetZaxis()->SetLabelSize(0.032);
+	  palette_histo->GetZaxis()->SetLabelFont(62);
+	  palette_histo->GetZaxis()->SetTickLength(0.009);
+	  palette_histo->SetMinimum(range_min);
+	  palette_histo->SetMaximum(range_max);
+	  palette_histo->SetContour(100);
+
+	  // the constructor TPaletteAxis(x1, y1, x2, y2, histo)
+	  // crashing due to no canvas existing (gPad = nullptr)
+	  palette_axis = new TPaletteAxis;
+	  palette_axis->SetHistogram(palette_histo);
+	  palette_axis->SetX1NDC(1-spacerx-palette_sizex); // position tuning
+	  palette_axis->SetY1NDC(spacery);
+	  palette_axis->SetX2NDC(1-spacerx-palette_sizex/2); // position tuning
+	  palette_axis->SetY2NDC(spacery+palette_sizey);
+	  palette_axis->SetY2NDC(1-palette_axis->GetY1NDC());
+	}
+
+    }; // tracker()
+
+    ~tracker()
+    {
+      // if (palette_axis) delete palette_axis;
+      // if (palette_histo) delete palette_histo;
+
+      delete label_fr;
+      delete label_it;
+
+      delete canvas;
+    }
 
     static const int nb_cell  = 2034;
 
@@ -787,16 +828,27 @@ namespace sndisplay
 
     void draw()
     {
+      const int canvas_width  = palette_axis ? 1231*2 : 1200*2;
+      const int canvas_height =  221*2;
+
       if (canvas == nullptr)
-	canvas = new TCanvas (Form("C_%s",tracker_name.Data()), tracker_name, 1800, 360);
+	{
+	  canvas = new TCanvas (Form("%s_canvas",tracker_name.Data()), tracker_name, canvas_width/2, canvas_height/2);
+
+	  // force canvas exact size
+	  int decoration_width = canvas_width/2 - canvas->GetWw();
+	  int decoration_height = canvas_height/2 - canvas->GetWh();
+	  int scroll_height = 16; // found by hand !
+
+	  // adjust the canvas width to cover 3/4 of tracker width
+	  canvas->SetWindowSize(canvas_width*3/4+decoration_width, canvas_height+decoration_height+scroll_height);
+	  canvas->SetCanvasSize(canvas_width, canvas_height);
+	}
 
       if (draw_content)
 	{
 	  for (int cellnum=0; cellnum<nb_cell; ++cellnum)
-	    {
-	      TText *ttext = content_text_v[cellnum];
-	      ttext->SetText(ttext->GetX(), ttext->GetY(), Form(draw_content_format.Data(), content[cellnum]));
-	    }
+	    content_text_v[cellnum].SetText(content_text_v[cellnum].GetX(), content_text_v[cellnum].GetY(), Form(draw_content_format.Data(), content[cellnum]));
 	}
 
       canvas->cd();
@@ -810,39 +862,45 @@ namespace sndisplay
 
 	    int cellnum = cell_side*113*9 + cell_row*9 + cell_layer;
 
-	    cellbox[cellnum]->Draw("l");
+	    cellbox[cellnum].Draw("l");
 
 	    if (draw_cellid)
-	      cellid_text_v[cellnum]->Draw();
+	      cellid_text_v[cellnum].Draw();
 
-	    if (draw_cellnum)
-	      cellnum_text_v[cellnum]->Draw();
+	    else if (draw_cellnum)
+	      cellnum_text_v[cellnum].Draw();
 
-	    if (draw_content && content[cellnum]!=0)
-	      content_text_v[cellnum]->Draw();
+	    if ((draw_content && content[cellnum]!=0) || text_was_set)
+	      content_text_v[cellnum].Draw();
 	  }
 
 	}
 
       }
 
-      for (TText *row_text : row_text_v)
-	row_text->Draw();
+      if (palette_axis) palette_axis->Draw();
+
+      for (size_t row = 0; row<row_text_v.size(); ++row)
+	row_text_v[row].Draw();
 
       label_it->Draw();
       label_fr->Draw();
 
       canvas->SetEditable(false);
 
+      text_was_set = false;
+
       update();
     }
 
-    void reset() {
+    void reset()
+    {
       for (int cellnum=0; cellnum<nb_cell; ++cellnum)
-	content[cellnum] = 0;
-
-      for (int cellnum=0; cellnum<nb_cell; ++cellnum)
-	cellbox[cellnum]->SetFillColor(0);
+	{
+	  content[cellnum] = 0;
+	  content_text_v[cellnum].Clear();
+	  cellbox[cellnum].SetFillColor(0);
+	}
 
       canvas->Modified();
       canvas->Update();
@@ -869,7 +927,11 @@ namespace sndisplay
 
     void setcolor (int cell_num, Color_t color)
     {
-      if (cell_num < 2034) cellbox[cell_num]->SetFillColor(color);
+      if ((cell_num>=0) && (cell_num < 2034))
+	{
+	  cellbox[cell_num].SetFillColor(color);
+	  color_was_set = true;
+	}
       else printf("*** wrong cell ID\n");
     }
 
@@ -879,6 +941,22 @@ namespace sndisplay
       setcolor(cell_num, color);
     }
 
+    void settext (int cell_num, const char *text)
+    {
+      if ((cell_num >= 0) && (cell_num < nb_cell))
+	{
+	  content_text_v[cell_num].SetText(content_text_v[cell_num].GetX(), content_text_v[cell_num].GetY(), text);
+	  text_was_set = true;
+	}
+      else printf("*** wrong cell ID\n");
+    }
+
+    void settext (int cell_side, int cell_row, int cell_layer, const char *text)
+    {
+      int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
+      settext(cell_num, text);
+    }
+
     void fill (int cellnum, float value=1)
     {
       setcontent(cellnum, content[cellnum]+value);
@@ -886,6 +964,12 @@ namespace sndisplay
 
     void update()
     {
+      if (color_was_set)
+	{
+	  color_was_set = false;
+	  return;
+	}
+
       // autoset Z range [0, content_max]
       // unless setrange() has been called
 
@@ -901,7 +985,6 @@ namespace sndisplay
       content_min = 0;
       if (range_min != -1) content_min = range_min;
       if (range_max != -1) content_max = range_max;
-      printf("Z range = [%f, %f] for '%s'\n", content_min, content_max, tracker_name.Data());
 
       for (int cellnum=0; cellnum<nb_cell; ++cellnum)
 	{
@@ -910,10 +993,17 @@ namespace sndisplay
 	      int color_index = floor (99*(content[cellnum]-content_min)/(content_max-content_min));
 	      if (color_index < 0) color_index = 0;
 	      else if (color_index >= 100) color_index = 99;
-	      cellbox[cellnum]->SetFillColor(palette::get_index() + color_index);
+	      cellbox[cellnum].SetFillColor(palette::get_index() + color_index);
 	    }
 	  else
-	    cellbox[cellnum]->SetFillColor(0);
+	    cellbox[cellnum].SetFillColor(0);
+	}
+
+      if (palette_axis)
+	{
+	  palette_histo->SetMinimum(content_min);
+	  palette_histo->SetMaximum(content_max);
+	  palette_histo->SetContour(100);
 	}
 
       canvas->Modified();
@@ -924,25 +1014,32 @@ namespace sndisplay
 
     TString tracker_name;
 
-    float range_min, range_max;
-
-    std::vector<float> content;
-    std::vector<TBox*>   cellbox;
-
+    // draw options
     bool draw_cellid;
     bool draw_cellnum;
     bool draw_content;
     TString draw_content_format;
+    float range_min, range_max;
 
-    std::vector<TText*> cellid_text_v;
-    std::vector<TText*> cellnum_text_v;
-    std::vector<TText*> content_text_v;
-    std::vector<TText*> row_text_v;
+    bool color_was_set;
+    bool text_was_set;
+
+    TCanvas *canvas;
+    TCanvas *canvas_fr;
 
     TText *label_it;
     TText *label_fr;
+    std::vector<TText> row_text_v;
 
-    TCanvas *canvas;
+    TH2D *palette_histo;
+    TPaletteAxis *palette_axis;
+
+    std::vector<float> content;
+
+    std::vector<TBox>  cellbox;
+    std::vector<TText> cellid_text_v;
+    std::vector<TText> cellnum_text_v;
+    std::vector<TText> content_text_v;
 
   }; // sndisplay::tracker class
 
@@ -1370,9 +1467,9 @@ void sndisplay_calorimeter_test_omnum ()
 
 ////////////////////////////////////////////////////////////////
 
-void sndisplay_cellnum ()
+void sndisplay_tracker_test (bool with_palette=true)
 {
-  sndisplay::tracker *sntracker = new sndisplay::tracker;
+  sndisplay::tracker *sntracker = new sndisplay::tracker ("tracker_test", with_palette);
 
   // sntracker->draw_cellid_label();
   // sntracker->draw_cellnum_label();
@@ -1382,7 +1479,11 @@ void sndisplay_cellnum ()
   for (int cellnum=0; cellnum<2034; ++cellnum)
     sntracker->setcontent(cellnum, trand.Gaus(100, 10));
 
+  sntracker->setrange(0, 160);
+
   sntracker->draw();
+
+  sntracker->canvas->SaveAs("sndisplay-tracker-test.png");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1395,6 +1496,8 @@ int main()
   sndisplay_calorimeter_test_values();
   sndisplay_calorimeter_test_status();
   sndisplay_calorimeter_test_omnum();
+
+  sndisplay_tracker_test();
 
   return 0;
 }

@@ -23,7 +23,17 @@ sndisplay_calorimeter_test_omnum();
 
 ## sndisplay::tracker
 
-![sndisplay tracker screenshot](sndisplay_tracker.png)
+![sndisplay tracker screenshot](sndisplay-tracker-test.png)
+
+run sndisplay::tracker demo script :
+```	  
+root
+
+.L sndisplay.cc
+
+// fill with random value and draw with palette
+sndisplay_tracker_test();
+```
 
 
 ## sndisplay::demonstrator
