@@ -14,6 +14,37 @@
 
 namespace sndisplay
 {
+  class palette
+  {
+  private:
+    palette()
+    {
+      const Int_t nRGBs = 6;
+      Double_t stops[nRGBs] = { 0.00, 0.20, 0.40, 0.60, 0.80, 1.00 };
+      Double_t red[nRGBs]   = { 0.25, 0.00, 0.20, 1.00, 1.00, 0.90 };
+      Double_t green[nRGBs] = { 0.25, 0.80, 1.00, 1.00, 0.80, 0.00 };
+      Double_t blue[nRGBs]  = { 1.00, 1.00, 0.20, 0.00, 0.00, 0.00 };
+
+      palette_index = TColor::CreateGradientColorTable(nRGBs, stops, red, green, blue, 100);
+    }
+
+    static palette *instance;
+    int palette_index;
+
+  public:
+    ~palette() {};
+
+    static palette *get_me() {
+      if (instance == nullptr) instance = new palette;
+      return instance;}
+
+    static int get_index() {
+      return get_me()->palette_index;}
+
+  }; // sndisplay::palette class
+
+  palette *palette::instance = nullptr;
+
   ////////////////////////////
   // sndisplay::calorimeter //
   ////////////////////////////
@@ -231,14 +262,6 @@ namespace sndisplay
       label_fr = new TText (spacerx+xw_sizex, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.5*gv_sizey, "FRANCE");
       label_fr->SetTextSize(0.028);
       label_fr->SetTextAlign(22);
-
-      const Int_t nRGBs = 6;
-      Double_t stops[nRGBs] = { 0.00, 0.20, 0.40, 0.60, 0.80, 1.00 };
-      Double_t red[nRGBs]   = { 0.25, 0.00, 0.20, 1.00, 1.00, 0.90 };
-      Double_t green[nRGBs] = { 0.25, 0.80, 1.00, 1.00, 0.80, 0.00 };
-      Double_t blue[nRGBs]  = { 1.00, 1.00, 0.20, 0.00, 0.00, 0.00 };
-
-      palette_index = TColor::CreateGradientColorTable(nRGBs, stops, red, green, blue, 100);
 
       palette_histo = nullptr;
       palette_axis = nullptr;
@@ -589,7 +612,7 @@ namespace sndisplay
 	      int color_index = floor (99*(content[omnum]-content_min)/(content_max-content_min));
 	      if (color_index < 0) color_index = 0;
 	      else if (color_index >= 100) color_index = 99;
-	      ombox[omnum].SetFillColor(palette_index + color_index);
+	      ombox[omnum].SetFillColor(palette::get_index() + color_index);
 	    }
 	  else
 	    ombox[omnum].SetFillColor(0);
@@ -635,7 +658,6 @@ namespace sndisplay
     TText *label_it;
     TText *label_fr;
 
-    int palette_index;
     TH2D *palette_histo;
     TPaletteAxis *palette_axis;
 
@@ -742,14 +764,6 @@ namespace sndisplay
       // label_fr = new TText (0.5 + spacerx, spacery+gv_sizey+spacery+13*mw_sizey+spacery+0.25*gv_sizey, "FRANCE");
       label_fr = new TText (spacerx, 0.25*spacery, "FRANCE");
       label_fr->SetTextSize(0.036);
-
-      const Int_t nRGBs = 6;
-      Double_t stops[nRGBs] = { 0.00, 0.20, 0.40, 0.60, 0.80, 1.00 };
-      Double_t red[nRGBs]   = { 0.25, 0.00, 0.20, 1.00, 1.00, 0.90 };
-      Double_t green[nRGBs] = { 0.25, 0.80, 1.00, 1.00, 0.80, 0.00 };
-      Double_t blue[nRGBs]  = { 1.00, 1.00, 0.20, 0.00, 0.00, 0.00 };
-
-      palette_index = TColor::CreateGradientColorTable(nRGBs, stops, red, green, blue, 100);
     };
 
     ~tracker() {};
@@ -896,7 +910,7 @@ namespace sndisplay
 	      int color_index = floor (99*(content[cellnum]-content_min)/(content_max-content_min));
 	      if (color_index < 0) color_index = 0;
 	      else if (color_index >= 100) color_index = 99;
-	      cellbox[cellnum]->SetFillColor(palette_index + color_index);
+	      cellbox[cellnum]->SetFillColor(palette::get_index() + color_index);
 	    }
 	  else
 	    cellbox[cellnum]->SetFillColor(0);
@@ -929,8 +943,6 @@ namespace sndisplay
     TText *label_fr;
 
     TCanvas *canvas;
-
-    int palette_index;
 
   }; // sndisplay::tracker class
 
@@ -1065,14 +1077,6 @@ namespace sndisplay
 	    }
 	  }
       }
-
-      const Int_t nRGBs = 6;
-      Double_t stops[nRGBs] = { 0.00, 0.20, 0.40, 0.60, 0.80, 1.00 };
-      Double_t red[nRGBs]   = { 0.25, 0.00, 0.20, 1.00, 1.00, 0.90 };
-      Double_t green[nRGBs] = { 0.25, 0.80, 1.00, 1.00, 0.80, 0.00 };
-      Double_t blue[nRGBs]  = { 1.00, 1.00, 0.20, 0.00, 0.00, 0.00 };
-      
-      palette_index = TColor::CreateGradientColorTable(nRGBs, stops, red, green, blue, 100);
 
     } // demonstrator ()
 
@@ -1237,7 +1241,7 @@ namespace sndisplay
     	      int color_index = floor (99*(top_om_content[om]-top_content_min)/(top_content_max-top_content_min));
     	      if (color_index < 0) color_index = 0;
     	      else if (color_index >= 100) color_index = 99;
-    	      top_om_box[om]->SetFillColor(palette_index + color_index);
+	      top_om_box[om]->SetFillColor(palette::get_index() + color_index);
     	    }
     	  else
     	    top_om_box[om]->SetFillColor(0);
@@ -1250,7 +1254,7 @@ namespace sndisplay
     	      int color_index = floor (99*(top_gg_content[gg]-top_content_min)/(top_content_max-top_content_min));
     	      if (color_index < 0) color_index = 0;
     	      else if (color_index >= 100) color_index = 99;
-    	      top_gg_ellipse[gg]->SetFillColor(palette_index + color_index);
+	      top_gg_ellipse[gg]->SetFillColor(palette::get_index() + color_index);
     	    }
     	  else
     	    top_gg_ellipse[gg]->SetFillColor(0);
@@ -1278,8 +1282,6 @@ namespace sndisplay
     // std::vector<TText*>  top_gg_text;
 
     TCanvas *demonstrator_canvas;
-
-    int palette_index;
 
   }; // sndisplay::demonstrator class
 
