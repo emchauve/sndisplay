@@ -1,17 +1,22 @@
 #include "TBox.h"
-#include "TText.h"
-// #include "TLatex.h"
-#include "TLine.h"
 #include "TCanvas.h"
-#include "TPad.h"
 #include "TColor.h"
+#include "TEllipse.h"
+#include "TLine.h"
+#include "TPad.h"
+#include "TRandom.h"
 #include "TSystem.h"
 #include "TString.h"
+#include "TText.h"
 
 #include<vector>
 
 namespace sndisplay
 {
+  ////////////////////////////
+  // sndisplay::calorimeter //
+  ////////////////////////////
+
   class calorimeter
   {
   public:
@@ -25,7 +30,7 @@ namespace sndisplay
       draw_content = false;
       draw_content_format = "%.0f";
 
-      for (unsigned int omnum=0; omnum<nb_om; ++omnum)
+      for (int omnum=0; omnum<nb_om; ++omnum)
 	content.push_back(0);
 
       range_min = range_max = -1;
@@ -45,13 +50,13 @@ namespace sndisplay
       // MWALL initialisation //
       //////////////////////////
 
-      for (unsigned int mw_side=0; mw_side<2; ++mw_side) {
+      for (int mw_side=0; mw_side<2; ++mw_side) {
 
-	for (unsigned int mw_column=0; mw_column<20; ++mw_column) {
+	for (int mw_column=0; mw_column<20; ++mw_column) {
 
-	  for (unsigned int mw_row=0; mw_row<13; ++mw_row) {
+	  for (int mw_row=0; mw_row<13; ++mw_row) {
 
-	    unsigned int omnum = mw_side*20*13 + mw_column*13 + mw_row;
+	    int omnum = mw_side*20*13 + mw_column*13 + mw_row;
 
 	    double x1 = spacerx + 2*xw_sizex + spacerx; // + 0.5*mw_side;
 	    x1 += (mw_side == 0) ? mw_sizex*(19-mw_column) : mw_sizex*(mw_column); // swap IT for external view
@@ -92,15 +97,15 @@ namespace sndisplay
       // XWALL initialisation //
       //////////////////////////
 
-      for (unsigned int xw_side=0; xw_side<2; ++xw_side) {
+      for (int xw_side=0; xw_side<2; ++xw_side) {
 
-	for (unsigned int xw_wall=0; xw_wall<2; ++xw_wall) {
+	for (int xw_wall=0; xw_wall<2; ++xw_wall) {
 
-	  for (unsigned int xw_column=0; xw_column<2; ++xw_column) {
+	  for (int xw_column=0; xw_column<2; ++xw_column) {
 
-	    for (unsigned int xw_row=0; xw_row<16; ++xw_row) {
+	    for (int xw_row=0; xw_row<16; ++xw_row) {
 
-	    unsigned int omnum = 520 + xw_side*2*2*16 + xw_wall*2*16 + xw_column*16 + xw_row;
+	    int omnum = 520 + xw_side*2*2*16 + xw_wall*2*16 + xw_column*16 + xw_row;
 
 	    double x1;
 	    
@@ -159,13 +164,13 @@ namespace sndisplay
       // GVETO initialisation //
       //////////////////////////
       
-      for (unsigned int gv_side=0; gv_side<2; ++gv_side) {
+      for (int gv_side=0; gv_side<2; ++gv_side) {
 
-	for (unsigned int gv_wall=0; gv_wall<2; ++gv_wall) {
+	for (int gv_wall=0; gv_wall<2; ++gv_wall) {
 
-	  for (unsigned int gv_column=0; gv_column<16; ++gv_column) {
+	  for (int gv_column=0; gv_column<16; ++gv_column) {
 
-	    unsigned int omnum = 520 + 128 + gv_side*2*16 + gv_wall*16 + gv_column;
+	    int omnum = 520 + 128 + gv_side*2*16 + gv_wall*16 + gv_column;
 
 	    double x1;
 
@@ -225,11 +230,11 @@ namespace sndisplay
 
     ~calorimeter() {};
     
-    static const unsigned int nmwall = 520;
-    static const unsigned int nxwall = 128;
-    static const unsigned int ngveto =  64;
+    static const int nmwall = 520;
+    static const int nxwall = 128;
+    static const int ngveto =  64;
 
-    static const unsigned int nb_om  = 712;
+    static const int nb_om  = 712;
 
     enum {
       AUTO,
@@ -280,10 +285,10 @@ namespace sndisplay
       canvas_it->cd();
       canvas_it->SetEditable(true);
       
-      unsigned int mw_side=0;
-      for (unsigned int mw_column=0; mw_column<20; ++mw_column) {
-	for (unsigned int mw_row=0; mw_row<13; ++mw_row) {
-	  unsigned int id = mw_side*20*13 + mw_column*13 + mw_row;
+      int mw_side=0;
+      for (int mw_column=0; mw_column<20; ++mw_column) {
+	for (int mw_row=0; mw_row<13; ++mw_row) {
+	  int id = mw_side*20*13 + mw_column*13 + mw_row;
 	  ombox[id]->Draw("l");
 	  if (draw_omid) // if (((mw_column % 5) == 0) || (mw_column == 19))
 	    omid_text_v[id]->Draw();
@@ -293,11 +298,11 @@ namespace sndisplay
 	}
       }
       
-      unsigned int xw_side=0;
-      for (unsigned int xw_wall=0; xw_wall<2; ++xw_wall) {
-	for (unsigned int xw_column=0; xw_column<2; ++xw_column) {
-	  for (unsigned int xw_row=0; xw_row<16; ++xw_row) {
-	    unsigned int id = 520 + xw_side*2*2*16 + xw_wall*2*16 + xw_column*16 + xw_row;
+      int xw_side=0;
+      for (int xw_wall=0; xw_wall<2; ++xw_wall) {
+	for (int xw_column=0; xw_column<2; ++xw_column) {
+	  for (int xw_row=0; xw_row<16; ++xw_row) {
+	    int id = 520 + xw_side*2*2*16 + xw_wall*2*16 + xw_column*16 + xw_row;
 	    ombox[id]->Draw("l");
 	    if (draw_omid) // if ((xw_column % 5) == 0)
 	      omid_text_v[id]->Draw();
@@ -308,10 +313,10 @@ namespace sndisplay
 	}
       }
       
-      unsigned int gv_side=0;
-      for (unsigned int gv_wall=0; gv_wall<2; ++gv_wall) {
-	for (unsigned int gv_column=0; gv_column<16; ++gv_column) {
-	  unsigned int id = 520 + 128 + gv_side*2*16 + gv_wall*16 + gv_column;
+      int gv_side=0;
+      for (int gv_wall=0; gv_wall<2; ++gv_wall) {
+	for (int gv_column=0; gv_column<16; ++gv_column) {
+	  int id = 520 + 128 + gv_side*2*16 + gv_wall*16 + gv_column;
 	  ombox[id]->Draw("l");
 	  if (draw_omid) // if ((gv_column % 5) == 0)
 	    omid_text_v[id]->Draw();
@@ -333,9 +338,9 @@ namespace sndisplay
       canvas_fr->SetEditable(true);
       
       mw_side=1;
-      for (unsigned int mw_column=0; mw_column<20; ++mw_column) {
-	for (unsigned int mw_row=0; mw_row<13; ++mw_row) {
-	  unsigned int id = mw_side*20*13 + mw_column*13 + mw_row;
+      for (int mw_column=0; mw_column<20; ++mw_column) {
+	for (int mw_row=0; mw_row<13; ++mw_row) {
+	  int id = mw_side*20*13 + mw_column*13 + mw_row;
 	  ombox[id]->Draw("l");
 	  if (draw_omid) // if (((mw_column % 5) == 0) || (mw_column == 19))
 	      omid_text_v[id]->Draw();
@@ -346,10 +351,10 @@ namespace sndisplay
       }
       
       xw_side=1;
-      for (unsigned int xw_wall=0; xw_wall<2; ++xw_wall) {
-	for (unsigned int xw_column=0; xw_column<2; ++xw_column) {
-	  for (unsigned int xw_row=0; xw_row<16; ++xw_row) {
-	    unsigned int id = 520 + xw_side*2*2*16 + xw_wall*2*16 + xw_column*16 + xw_row;
+      for (int xw_wall=0; xw_wall<2; ++xw_wall) {
+	for (int xw_column=0; xw_column<2; ++xw_column) {
+	  for (int xw_row=0; xw_row<16; ++xw_row) {
+	    int id = 520 + xw_side*2*2*16 + xw_wall*2*16 + xw_column*16 + xw_row;
 	    ombox[id]->Draw("l");
 	    if (draw_omid) // if ((xw_column % 5) == 0)
 	      omid_text_v[id]->Draw();
@@ -361,9 +366,9 @@ namespace sndisplay
       }
       
       gv_side=1;
-      for (unsigned int gv_wall=0; gv_wall<2; ++gv_wall) {
-	for (unsigned int gv_column=0; gv_column<16; ++gv_column) {
-	  unsigned int id = 520 + 128 + gv_side*2*16 + gv_wall*16 + gv_column;
+      for (int gv_wall=0; gv_wall<2; ++gv_wall) {
+	for (int gv_column=0; gv_column<16; ++gv_column) {
+	  int id = 520 + 128 + gv_side*2*16 + gv_wall*16 + gv_column;
 	  ombox[id]->Draw("l");
 	  if (draw_omid) // if ((gv_column % 5) == 0)
 	    omid_text_v[id]->Draw();
@@ -383,10 +388,10 @@ namespace sndisplay
 
     
     void reset() {
-      for (unsigned int omnum=0; omnum<nb_om; ++omnum)
+      for (int omnum=0; omnum<nb_om; ++omnum)
 	content[omnum] = 0;
 
-      for (unsigned int omnum=0; omnum<nb_om; ++omnum)
+      for (int omnum=0; omnum<nb_om; ++omnum)
 	ombox[omnum]->SetFillColor(0);
       
       canvas_it->Modified();
@@ -445,7 +450,7 @@ namespace sndisplay
       float content_min = content[0];
       float content_max = content[0];
 
-      for (unsigned int omnum=1; omnum<nb_om; ++omnum)
+      for (int omnum=1; omnum<nb_om; ++omnum)
 	{
 	  if (content[omnum] < content_min) content_min = content[omnum];
 	  if (content[omnum] > content_max) content_max = content[omnum];
@@ -455,7 +460,7 @@ namespace sndisplay
       if (range_min != -1) content_min = range_min;
       if (range_max != -1) content_max = range_max;
 
-      for (unsigned int omnum=0; omnum<nb_om; ++omnum)
+      for (int omnum=0; omnum<nb_om; ++omnum)
 	{
 	  if (content[omnum] != 0)
 	    {
@@ -513,7 +518,11 @@ namespace sndisplay
 
     int palette_index;
 
-  }; // class calorimeter
+  }; // sndisplay::calorimeter class
+
+  ////////////////////////
+  // sndisplay::tracker //
+  ////////////////////////
 
   class tracker
   {
@@ -529,7 +538,7 @@ namespace sndisplay
 
       range_min = range_max = -1;
       
-      for (unsigned int cellnum=0; cellnum<nb_cell; ++cellnum)
+      for (int cellnum=0; cellnum<nb_cell; ++cellnum)
 	content.push_back(0);
 
       range_min = range_max = -1;
@@ -544,15 +553,15 @@ namespace sndisplay
       // CELLS initialisation //
       //////////////////////////
 
-      for (unsigned int cell_side=0; cell_side<2; ++cell_side) {
+      for (int cell_side=0; cell_side<2; ++cell_side) {
 
-	  for (unsigned int cell_row=0; cell_row<113; ++cell_row) {
+	  for (int cell_row=0; cell_row<113; ++cell_row) {
 
 	    double x1 = spacerx + cell_row*cell_sizex;
 
-	    for (unsigned int cell_layer=0; cell_layer<9; ++cell_layer) {
+	    for (int cell_layer=0; cell_layer<9; ++cell_layer) {
 
-	    unsigned int cellnum = cell_side*113*9 + cell_row*9 + cell_layer;
+	    int cellnum = cell_side*113*9 + cell_row*9 + cell_layer;
 
 	    double y1 = spacery;
 
@@ -617,7 +626,7 @@ namespace sndisplay
 
     ~tracker() {};
 
-    static const unsigned int nb_cell  = 2034;
+    static const int nb_cell  = 2034;
 
     void setrange(float zmin, float zmax) 
     {
@@ -651,13 +660,13 @@ namespace sndisplay
       canvas->cd();
       canvas->SetEditable(true);
 
-      for (unsigned int cell_side=0; cell_side<2; ++cell_side) {
+      for (int cell_side=0; cell_side<2; ++cell_side) {
 
-	for (unsigned int cell_row=0; cell_row<113; ++cell_row) {
+	for (int cell_row=0; cell_row<113; ++cell_row) {
 
-	  for (unsigned int cell_layer=0; cell_layer<9; ++cell_layer) {
+	  for (int cell_layer=0; cell_layer<9; ++cell_layer) {
 
-	    unsigned int cellnum = cell_side*113*9 + cell_row*9 + cell_layer;
+	    int cellnum = cell_side*113*9 + cell_row*9 + cell_layer;
 
 	    cellbox[cellnum]->Draw("l");
 
@@ -687,10 +696,10 @@ namespace sndisplay
     }
 
     void reset() {
-      for (unsigned int cellnum=0; cellnum<nb_cell; ++cellnum)
+      for (int cellnum=0; cellnum<nb_cell; ++cellnum)
 	content[cellnum] = 0;
 
-      for (unsigned int cellnum=0; cellnum<nb_cell; ++cellnum)
+      for (int cellnum=0; cellnum<nb_cell; ++cellnum)
 	cellbox[cellnum]->SetFillColor(0);
 
       canvas->Modified();
@@ -712,7 +721,7 @@ namespace sndisplay
 
     void setcontent (int cell_side, int cell_row, int cell_layer, float value)
     {
-      unsigned int cellnum = cell_side*9*113 + cell_row*9 + cell_layer;
+      int cellnum = cell_side*9*113 + cell_row*9 + cell_layer;
       setcontent(cellnum, value);
     }
 
@@ -724,7 +733,7 @@ namespace sndisplay
 
     void setcolor (int cell_side, int cell_row, int cell_layer, Color_t color)
     {
-      unsigned int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
+      int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
       setcolor(cell_num, color);
     }
 
@@ -741,7 +750,7 @@ namespace sndisplay
       float content_min = content[0];
       float content_max = content[0];
 
-      for (unsigned int cellnum=1; cellnum<nb_cell; ++cellnum)
+      for (int cellnum=1; cellnum<nb_cell; ++cellnum)
 	{
 	  if (content[cellnum] < content_min) content_min = content[cellnum];
 	  if (content[cellnum] > content_max) content_max = content[cellnum];
@@ -752,7 +761,7 @@ namespace sndisplay
       if (range_max != -1) content_max = range_max;
       printf("Z range = [%f, %f] for '%s'\n", content_min, content_max, tracker_name.Data());
 
-      for (unsigned int cellnum=0; cellnum<nb_cell; ++cellnum)
+      for (int cellnum=0; cellnum<nb_cell; ++cellnum)
 	{
 	  if (content[cellnum] != 0)
 	    {
@@ -795,17 +804,17 @@ namespace sndisplay
 
     int palette_index;
 
-  }; // class tracker
+  }; // sndisplay::tracker class
 
+  /////////////////////////////
+  // sndisplay::demonstrator //
+  /////////////////////////////
 
   class demonstrator
   {
   public:
     demonstrator (const char *n = "") : demonstrator_name (n)
     {
-      // calorimeter_display = new calorimeter(n);
-      // tracker_display = new tracker(n);
-
       range_min = range_max = -1;
 
       // TOP_VIEW //
@@ -828,9 +837,9 @@ namespace sndisplay
 
       // MW (column only)
 
-      for (unsigned int mw_side=0; mw_side<2; ++mw_side) {
+      for (int mw_side=0; mw_side<2; ++mw_side) {
 
-	for (unsigned int mw_column=0; mw_column<20; ++mw_column) {
+	for (int mw_column=0; mw_column<20; ++mw_column) {
 
 	  double x1 = spacerx + 0.5*xw_sizex + mw_column*mw_sizex;
 	  double y1 = spacery + (1-mw_side)*(mw_sizey+4*xw_sizey+se_sizey);
@@ -863,13 +872,11 @@ namespace sndisplay
 
       // XW (column only)
 
-      for (unsigned int xw_side=0; xw_side<2; ++xw_side) {
+      for (int xw_side=0; xw_side<2; ++xw_side) {
 
-	for (unsigned int xw_wall=0; xw_wall<2; ++xw_wall) {
+	for (int xw_wall=0; xw_wall<2; ++xw_wall) {
 
-	  for (unsigned int xw_column=0; xw_column<2; ++xw_column) {
-
-	    unsigned int omnum = 40 + xw_side*2*2 + xw_wall*2 + xw_column;
+	  for (int xw_column=0; xw_column<2; ++xw_column) {
 
 	    double x1 = spacerx + xw_wall*(xw_sizex+113*gg_sizex);
 	    double x2 = x1 + xw_sizex;
@@ -899,13 +906,11 @@ namespace sndisplay
 	}
       }
 
-      for (unsigned int gg_side=0; gg_side<2; ++gg_side) {
+      for (int gg_side=0; gg_side<2; ++gg_side) {
 
-	  for (unsigned int gg_row=0; gg_row<113; ++gg_row) {
+	  for (int gg_row=0; gg_row<113; ++gg_row) {
 
-	    for (unsigned int gg_layer=0; gg_layer<9; ++gg_layer) {
-
-	      unsigned int ggnum = gg_side*113*9 + gg_row*9 + gg_layer;
+	    for (int gg_layer=0; gg_layer<9; ++gg_layer) {
 
 	      double x1 = spacerx + xw_sizex + gg_row*gg_sizex;
 	    
@@ -956,36 +961,36 @@ namespace sndisplay
 	demonstrator_canvas = new TCanvas (Form("C_demonstrator_%s",demonstrator_name.Data()), Form("%s",demonstrator_name.Data()), 1800, 450);
       else demonstrator_canvas->cd();
 
-      for (unsigned int mw_side=0; mw_side<2; ++mw_side)
+      for (int mw_side=0; mw_side<2; ++mw_side)
 	{
-	  for (unsigned int mw_column=0; mw_column<20; ++mw_column)
+	  for (int mw_column=0; mw_column<20; ++mw_column)
 	    {
-	      unsigned int top_om_num = mw_side*20 + mw_column;
+	      int top_om_num = mw_side*20 + mw_column;
  	      top_om_box[top_om_num]->Draw("l");
 	      top_om_text[top_om_num]->Draw();
 	    }
 	}
 
-      for (unsigned int xw_side=0; xw_side<2; ++xw_side)
+      for (int xw_side=0; xw_side<2; ++xw_side)
 	{
-	  for (unsigned int xw_wall=0; xw_wall<2; ++xw_wall)
+	  for (int xw_wall=0; xw_wall<2; ++xw_wall)
 	    {
-	      for (unsigned int xw_column=0; xw_column<2; ++xw_column)
+	      for (int xw_column=0; xw_column<2; ++xw_column)
 		{
-		  unsigned int top_om_num = 40 + xw_side*2*2 + xw_wall*2 + xw_column;
+		  int top_om_num = 40 + xw_side*2*2 + xw_wall*2 + xw_column;
 		  top_om_box[top_om_num]->Draw("l");
 		  top_om_text[top_om_num]->Draw();
 		}
 	    }
 	}
       
-      for (unsigned int gg_side=0; gg_side<2; ++gg_side)
+      for (int gg_side=0; gg_side<2; ++gg_side)
 	{
-	  for (unsigned int gg_row=0; gg_row<113; ++gg_row)
+	  for (int gg_row=0; gg_row<113; ++gg_row)
 	    {
-	      for (unsigned int gg_layer=0; gg_layer<9; ++gg_layer)
+	      for (int gg_layer=0; gg_layer<9; ++gg_layer)
 		{
-		  unsigned int top_gg_num = gg_side*113*9 + gg_row*9 + gg_layer;
+		  int top_gg_num = gg_side*113*9 + gg_row*9 + gg_layer;
 		  top_gg_box[top_gg_num]->Draw("l");
 		  top_gg_ellipse[top_gg_num]->Draw("l");
 		  // top_g_text[top_gg_num]->Draw();
@@ -1003,21 +1008,21 @@ namespace sndisplay
       
       if (om_num < 260) // MW IT
 	{
-	  unsigned int om_side = 0;
-	  unsigned int om_column = (om_num/13);
+	  int om_side = 0;
+	  int om_column = (om_num/13);
 	  top_om_num = om_side*20 + om_column;
 	}
       else if (om_num < 520) // MW IT
 	{
-	  unsigned int om_side = 1;
-	  unsigned int om_column = (om_num-260)/13;
+	  int om_side = 1;
+	  int om_column = (om_num-260)/13;
 	  top_om_num = om_side*20 + om_column;
 	}
       else if (om_num < 648) // XW
 	{
-	  unsigned int om_side = (om_num < 584) ? 0 : 1;
-	  unsigned int om_wall = (om_num-520-om_side*64)/32;
-	  unsigned int om_column = (om_num-520-om_side*64-om_wall*32)/16;
+	  int om_side = (om_num < 584) ? 0 : 1;
+	  int om_wall = (om_num-520-om_side*64)/32;
+	  int om_column = (om_num-520-om_side*64-om_wall*32)/16;
 	  top_om_num = 40 + om_side*2*2 + om_wall*2 + om_column;
 	}
 
@@ -1025,7 +1030,7 @@ namespace sndisplay
     }
 
 
-    void setggcontent (unsigned int cell_num, float value)
+    void setggcontent (int cell_num, float value)
     {
       if (cell_num < 2034) top_gg_content[cell_num] = value;
       else printf("*** wrong cell ID\n");
@@ -1033,7 +1038,7 @@ namespace sndisplay
     
     void setggcontent (int cell_side, int cell_row, int cell_layer, float value)
     {
-      unsigned int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
+      int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
       setggcontent(cell_num, value);
     }
     
@@ -1045,7 +1050,7 @@ namespace sndisplay
     
     void setggcolor (int cell_side, int cell_row, int cell_layer, Color_t color)
     {
-      unsigned int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
+      int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
       setggcolor(cell_num, color);
     }
 
@@ -1135,9 +1140,6 @@ namespace sndisplay
 
     float range_min, range_max;
     
-    // calorimeter *calorimeter_display;
-    // tracker *tracker_display;
-
     std::vector<float> top_om_content;
     std::vector<TBox*> top_om_box;
     std::vector<TText*> top_om_text;
@@ -1151,9 +1153,9 @@ namespace sndisplay
 
     int palette_index;
 
-  }; // class demonstrator
+  }; // sndisplay::demonstrator class
 
-} // namespace sndisplay
+} // sndisplay namespace
 
 // sndisplay_test(): example of sndisplay::calorimeter usage
 
@@ -1202,4 +1204,10 @@ void sndisplay_cellnum ()
     sntracker->setcontent(cellnum, trand.Gaus(100, 10));
 
   sntracker->draw();
+}
+
+int main()
+{
+  sndisplay_test();
+  return 0;
 }
