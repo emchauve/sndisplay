@@ -46,6 +46,6 @@ root
 
 .L sndisplay.cc
 
-// fill with random value and draw with palette
+// fill with the official first demonstrator track
 sndisplay_demonstrator_test();
 ```
