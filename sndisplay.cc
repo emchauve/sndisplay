@@ -1052,17 +1052,21 @@ namespace sndisplay
   public:
     demonstrator (const char *n = "") : demonstrator_name (n)
     {
+      canvas = nullptr;
+
       range_min = range_max = -1;
 
       // TOP_VIEW //
 
-      const double spacerx = 0.0125;
-      const double spacery = 0.0250;
+      const double spacerx = 0.005;
+      const double spacery = 0.025;
 
-      const double mw_sizey = (1-2*spacery)/(2.0 + 4*1.035 + 0.313);
+      const double title_sizey = 0.0615;
+
+      const double mw_sizey = (1-2*spacery-title_sizey)/(2.0 + 4*1.035 + 0.125);
       const double xw_sizey = 1.035*mw_sizey;
-      const double se_sizey = 0.313*mw_sizey;
-      const double gg_sizey = (1-2*spacery-2*mw_sizey-se_sizey)/18.0;
+      const double se_sizey = 0.125*mw_sizey;
+      const double gg_sizey = (1-2*spacery-title_sizey-2*mw_sizey-se_sizey)/18.0;
 
       const double mw_sizex = (1-2*spacerx)/(20 + 2*0.5*0.720);
       const double xw_sizex = (1-2*spacerx-20*mw_sizex);
@@ -1147,33 +1151,37 @@ namespace sndisplay
 
 	  for (int gg_row=0; gg_row<113; ++gg_row) {
 
-	    for (int gg_layer=0; gg_layer<9; ++gg_layer) {
+	    for (int gg_layer=0; gg_layer<9; ++gg_layer)
+	      {
+		double x1 = spacerx + xw_sizex + gg_row*gg_sizex;
+		double y1 = spacery + mw_sizey;
 
-	      double x1 = spacerx + xw_sizex + gg_row*gg_sizex;
-	    
-	      double y1 = spacery + mw_sizey;
-	      if (gg_side == 0)
-		y1 += 9*gg_sizey + se_sizey + gg_layer*gg_sizey;
-	      else 
-		y1 += (8-gg_layer)*gg_sizey;
+		if (gg_side == 0)
+		  y1 += 9*gg_sizey + se_sizey + gg_layer*gg_sizey;
+		else
+		  y1 += (8-gg_layer)*gg_sizey;
 
-	      double x2 = x1 + gg_sizex;
-	      double y2 = y1 + gg_sizey;
+		double x2 = x1 + gg_sizex;
+		double y2 = y1 + gg_sizey;
 
-	      top_gg_content.push_back(0);
+		top_gg_content.push_back(0);
 
-	      TBox *box = new TBox(x1, y1, x2, y2);
-	      box->SetFillColor(0);
-	      box->SetLineWidth(1);
-	      top_gg_box.push_back(box);
+		TBox *box = new TBox(x1, y1, x2, y2);
+		box->SetFillColor(0);
+		box->SetLineWidth(1);
+		top_gg_box.push_back(box);
 
-	      TEllipse *ellipse = new TEllipse((x1+x2)/2, (y1+y2)/2, gg_sizex/2, gg_sizey/2);
-	      ellipse->SetFillColor(0);
-	      ellipse->SetLineWidth(1);
-	      top_gg_ellipse.push_back(ellipse);
-	    }
+		TEllipse *ellipse = new TEllipse((x1+x2)/2, (y1+y2)/2, gg_sizex/2, gg_sizey/2);
+		ellipse->SetFillColor(0);
+		ellipse->SetLineWidth(1);
+		top_gg_ellipse.push_back(ellipse);
+	      }
 	  }
       }
+
+      title = new TText (spacerx, 1-title_sizey*3/4, "");
+      title->SetTextSize(0.056);
+      title->SetTextAlign(12);
 
     } // demonstrator ()
 
@@ -1186,9 +1194,22 @@ namespace sndisplay
 
     void draw_top()
     {
-      if (demonstrator_canvas == nullptr)
-	demonstrator_canvas = new TCanvas (Form("C_demonstrator_%s",demonstrator_name.Data()), Form("%s",demonstrator_name.Data()), 1800, 450);
-      else demonstrator_canvas->cd();
+      if (canvas == nullptr)
+	{
+	  const int canvas_width  = 1600;
+	  const int canvas_height = 400; // 374 without title
+
+	  canvas = new TCanvas (Form("C_demonstrator_%s",demonstrator_name.Data()), Form("%s",demonstrator_name.Data()), canvas_width, canvas_height);
+
+	  // force canvas exact size
+	  int decoration_width = canvas_width - canvas->GetWw();
+	  int decoration_height = canvas_height - canvas->GetWh();
+	  canvas->SetWindowSize(canvas_width+decoration_width, canvas_height+decoration_height);
+
+	  // preserve width/height ratio in case of resizing
+	  canvas->SetFixedAspectRatio();
+	}
+      else canvas->cd();
 
       for (int mw_side=0; mw_side<2; ++mw_side)
 	{
@@ -1226,6 +1247,8 @@ namespace sndisplay
 		}
 	    }
 	}
+
+      title->Draw();
 
       update();
 
@@ -1283,9 +1306,11 @@ namespace sndisplay
       setggcolor(cell_num, color);
     }
 
+    void settitle (const char *text)
+    {
+      title->SetText(title->GetX(), title->GetY(), text);
+    }
     
-
-
     void reset()
     {
       for (size_t om=0; om<top_om_content.size(); ++om)
@@ -1301,15 +1326,15 @@ namespace sndisplay
 	  // top_gg_box[gg]->SetFillColor(0);
 	}
 
-      demonstrator_canvas->Modified();
-      demonstrator_canvas->Update();
+      canvas->Modified();
+      canvas->Update();
 
       gSystem->ProcessEvents();
     }
 
     void update()
     {
-      demonstrator_canvas->cd();
+      canvas->cd();
 
       float top_content_min = top_om_content[0];
       float top_content_max = top_om_content[0];
@@ -1357,8 +1382,8 @@ namespace sndisplay
     	    top_gg_ellipse[gg]->SetFillColor(0);
     	}
 
-      demonstrator_canvas->Modified();
-      demonstrator_canvas->Update();
+      canvas->Modified();
+      canvas->Update();
 
       gSystem->ProcessEvents();
     }
@@ -1366,6 +1391,9 @@ namespace sndisplay
     //
 
     TString demonstrator_name;
+
+    TCanvas *canvas;
+    TText *title;
 
     float range_min, range_max;
     
@@ -1377,8 +1405,6 @@ namespace sndisplay
     std::vector<TBox*> top_gg_box;
     std::vector<TEllipse*> top_gg_ellipse;
     // std::vector<TText*>  top_gg_text;
-
-    TCanvas *demonstrator_canvas;
 
   }; // sndisplay::demonstrator class
 
@@ -1488,6 +1514,56 @@ void sndisplay_tracker_test (bool with_palette=true)
 
 ////////////////////////////////////////////////////////////////
 
+void sndisplay_demonstrator_test ()
+{
+  sndisplay::demonstrator *sndemonstrator = new sndisplay::demonstrator ("demonstrator_test");
+
+  const float anode_and_two_cathodes  = 1;
+  const float anode_and_one_cathode   = 0.85;
+  const float anode_and_no_cathode    = 0.7;
+  const float two_cathodes_only       = 0.5;
+  const float one_cathode_only        = 0.2;
+
+  sndemonstrator->setomcontent(23,  1.0); // M:0.1.10 => 260*0 + 13*1 + 10 = 23
+  sndemonstrator->setomcontent(276, 1.0); // M:1.1.2  => 260*1 + 13*1 + 3  = 276
+
+  sndemonstrator->setggcontent(0,  7, 7, anode_and_two_cathodes);
+  sndemonstrator->setggcontent(0,  7, 8, anode_and_one_cathode);
+  sndemonstrator->setggcontent(0,  8, 6, one_cathode_only);
+  sndemonstrator->setggcontent(0,  8, 7, anode_and_two_cathodes);
+  sndemonstrator->setggcontent(0,  9, 2, anode_and_one_cathode);
+  sndemonstrator->setggcontent(0,  9, 3, anode_and_two_cathodes);
+  sndemonstrator->setggcontent(0,  9, 4, anode_and_two_cathodes);
+  sndemonstrator->setggcontent(0, 10, 0, anode_and_no_cathode);
+  sndemonstrator->setggcontent(0, 10, 1, anode_and_one_cathode);
+
+  sndemonstrator->setggcontent(1,  8, 6, one_cathode_only);
+  sndemonstrator->setggcontent(1,  8, 7, anode_and_one_cathode);
+  sndemonstrator->setggcontent(1,  9, 3, one_cathode_only);
+  sndemonstrator->setggcontent(1,  9, 4, anode_and_one_cathode);
+  sndemonstrator->setggcontent(1,  9, 5, anode_and_one_cathode);
+  sndemonstrator->setggcontent(1,  9, 6, anode_and_one_cathode);
+  sndemonstrator->setggcontent(1,  9, 7, anode_and_one_cathode);
+  sndemonstrator->setggcontent(1, 10, 0, anode_and_no_cathode);
+  sndemonstrator->setggcontent(1, 10, 1, anode_and_two_cathodes);
+  sndemonstrator->setggcontent(1, 10, 2, anode_and_two_cathodes);
+  sndemonstrator->setggcontent(1, 10, 3, anode_and_two_cathodes);
+  sndemonstrator->setggcontent(1, 11, 0, anode_and_one_cathode);
+
+  sndemonstrator->settitle("RUN 609 // TRIGGER 9");
+  sndemonstrator->draw_top();
+
+  // disable cells in area != 0
+  for (int side=0; side<2; ++side)
+    for (int row=15; row<113; ++row)
+      for (int layer=0; layer<9; ++layer)
+	sndemonstrator->setggcolor(side, row, layer, kGray+1);
+
+  sndemonstrator->canvas->SaveAs("sndisplay-demonstrator-test.png");
+}
+
+////////////////////////////////////////////////////////////////
+
 // main() can be compiled with (ROOT's HistPainter library must be added!)
 // g++ sndisplay.cc -o sndisplay `root-config --cflags --libs` -lHistPainter
 
@@ -1498,6 +1574,8 @@ int main()
   sndisplay_calorimeter_test_omnum();
 
   sndisplay_tracker_test();
+
+  sndisplay_demonstrator_test();
 
   return 0;
 }
