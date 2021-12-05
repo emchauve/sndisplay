@@ -1287,6 +1287,11 @@ namespace sndisplay
       if (cell_num < 2034) top_gg_content[cell_num] = value;
       else printf("*** wrong cell ID\n");
     }
+
+    float getggcontent (int cell_num)
+    {
+      return top_gg_content[cell_num];
+    }
     
     void setggcontent (int cell_side, int cell_row, int cell_layer, float value)
     {
