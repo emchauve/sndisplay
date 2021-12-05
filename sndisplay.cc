@@ -367,11 +367,7 @@ namespace sndisplay
 	  canvas_fr->SetFixedAspectRatio();
 	}
 
-      if (draw_content && !text_was_set)
-	{
-	  for (int omnum=0; omnum<nb_om; ++omnum)
-	    settext(omnum, Form(draw_content_format.Data(), content[omnum]));
-	}
+      update();
 
       /////////////
       // Draw IT //
@@ -446,7 +442,7 @@ namespace sndisplay
 	      omid_text_v[id].Draw();
 	  else if (draw_omnum)
 	    omnum_text_v[id].Draw();
-	  if ((draw_content && content[id]!=0) || text_was_set)
+	  if (draw_content || text_was_set)
 	    content_text_v[id].Draw();
 	}
       }
@@ -461,7 +457,7 @@ namespace sndisplay
 	      omid_text_v[id].Draw();
 	    else if (draw_omnum)
 	      omnum_text_v[id].Draw();
-	    if ((draw_content && content[id]!=0) || text_was_set)
+	    if (draw_content || text_was_set)
 	      content_text_v[id].Draw();
 	  }
 	}
@@ -476,7 +472,7 @@ namespace sndisplay
 	    omid_text_v[id].Draw();
 	  else if (draw_omnum)
 	    omnum_text_v[id].Draw();
-	  if ((draw_content && content[id]!=0) || text_was_set)
+	  if (draw_content || text_was_set)
 	    content_text_v[id].Draw();
 	}
       }
@@ -491,7 +487,6 @@ namespace sndisplay
 
       //
 
-      update();
     }
 
     
@@ -607,6 +602,7 @@ namespace sndisplay
       if (range_min != -1) content_min = range_min;
       if (range_max != -1) content_max = range_max;
 
+      // update colors
       for (int omnum=0; omnum<nb_om; ++omnum)
 	{
 	  if (content[omnum] != 0)
@@ -620,10 +616,16 @@ namespace sndisplay
 	    ombox[omnum].SetFillColor(0);
 	}
 
+      // update content text
       if (draw_content && !text_was_set)
 	{
 	  for (int omnum=0; omnum<nb_om; ++omnum)
-	    settext(omnum, Form(draw_content_format.Data(), content[omnum]));
+	    {
+	      TString text = "";
+	      if (content[omnum] != 0)
+		text = Form(draw_content_format.Data(), content[omnum]);
+	      content_text_v[omnum].SetText(content_text_v[omnum].GetX(), content_text_v[omnum].GetY(), text);
+	    }
 	}
 
       if (palette_axis)
