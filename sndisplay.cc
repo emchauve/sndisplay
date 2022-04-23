@@ -345,7 +345,7 @@ namespace sndisplay
 
       // update color and content
 
-      update (false);
+      update(false);
 
       /////////////
       // Draw IT //
@@ -844,6 +844,8 @@ namespace sndisplay
       const int canvas_width  = palette_axis ? 1231*2 : 1200*2;
       const int canvas_height =  221*2;
 
+      update(false);
+
       if (canvas == nullptr)
 	{
 	  canvas = new TCanvas (Form("%s_canvas",tracker_name.Data()), tracker_name, canvas_width/2, canvas_height/2);
@@ -902,8 +904,6 @@ namespace sndisplay
       canvas->SetEditable(false);
 
       text_was_set = false;
-
-      update();
     }
 
     void reset()
@@ -914,12 +914,6 @@ namespace sndisplay
 	  content_text_v[cellnum].Clear();
 	  cellbox[cellnum].SetFillColor(0);
 	}
-
-      canvas->cd();
-      canvas->Modified();
-      canvas->Update();
-
-      gSystem->ProcessEvents();
     }
 
     float getcontent (int cellnum)
@@ -976,7 +970,16 @@ namespace sndisplay
       setcontent(cellnum, content[cellnum]+value);
     }
 
-    void update()
+    void update_canvas ()
+    {
+      canvas->cd();
+      canvas->Modified();
+      canvas->Update();
+
+      gSystem->ProcessEvents();
+    }
+
+    void update (bool update_canvas_too=true)
     {
       if (color_was_set)
 	{
@@ -1020,10 +1023,8 @@ namespace sndisplay
 	  palette_histo->SetContour(100);
 	}
 
-      canvas->Modified();
-      canvas->Update();
-
-      gSystem->ProcessEvents();
+      if (update_canvas_too)
+	update_canvas();
     }
 
     TString tracker_name;
@@ -1208,6 +1209,8 @@ namespace sndisplay
 
     void draw_top()
     {
+      update(false);
+
       if (canvas == nullptr)
 	{
 	  const int canvas_width  = 1600;
@@ -1263,8 +1266,6 @@ namespace sndisplay
 	}
 
       title->Draw();
-
-      update();
 
     } // draw_top
 
@@ -1330,7 +1331,7 @@ namespace sndisplay
       title->SetText(title->GetX(), title->GetY(), text);
     }
     
-    void reset()
+    void reset ()
     {
       for (size_t om=0; om<top_om_content.size(); ++om)
 	{
@@ -1344,17 +1345,18 @@ namespace sndisplay
 	  top_gg_ellipse[gg]->SetFillColor(0);
 	  // top_gg_box[gg]->SetFillColor(0);
 	}
+    }
 
+    void update_canvas ()
+    {
       canvas->Modified();
       canvas->Update();
 
       gSystem->ProcessEvents();
     }
 
-    void update()
+    void update (bool update_canvas_too=true)
     {
-      canvas->cd();
-
       float top_content_min = top_om_content[0];
       float top_content_max = top_om_content[0];
 
@@ -1401,10 +1403,8 @@ namespace sndisplay
     	    top_gg_ellipse[gg]->SetFillColor(0);
     	}
 
-      canvas->Modified();
-      canvas->Update();
-
-      gSystem->ProcessEvents();
+      if (update_canvas_too)
+	update_canvas();
     }
 
     //
@@ -1461,8 +1461,6 @@ void sndisplay_calorimeter_test_values (bool with_palette = true)
   // merge IT and FR canvas side by side using image magick (if installed)
   gSystem->Exec("which convert > /dev/null && convert sndisplay-calorimeter-test-it.png sndisplay-calorimeter-test-fr.png +append sndisplay-calorimeter-test.png");
 
-  //
-  // sncalo->update();
 }
 
 ////////////////////////////////////////////////////////////////
