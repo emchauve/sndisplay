@@ -1,3 +1,6 @@
+#ifndef SNDISPLAY_CC
+#define SNDISPLAY_CC
+
 #include "TBox.h"
 #include "TCanvas.h"
 #include "TColor.h"
@@ -340,6 +343,14 @@ namespace sndisplay
       const int canvas_width  = palette_axis ? 1284 : 1200;
       const int canvas_height = 780;
 
+      // update color and content
+
+      update (false);
+
+      /////////////
+      // Draw IT //
+      /////////////
+
       if (canvas_it == nullptr)
 	{
 	  canvas_it = new TCanvas (Form("%s_canvas_it",calorimeter_name.Data()), Form("%s (IT side)",calorimeter_name.Data()), canvas_width, canvas_height);
@@ -352,26 +363,6 @@ namespace sndisplay
 	  // preserve width/height ratio in case of resizing
 	  canvas_it->SetFixedAspectRatio();
 	}
-
-      if (canvas_fr == nullptr)
-	{
-	  canvas_fr = new TCanvas (Form("%s_canvas_fr",calorimeter_name.Data()), Form("%s (FR side)",calorimeter_name.Data()), canvas_width, canvas_height);
-	  canvas_fr->SetWindowSize(canvas_width+(canvas_width-canvas_fr->GetWw()), canvas_height+(canvas_height-canvas_fr->GetWh()));
-
-	  // force canvas exact size
-	  int decoration_width = canvas_width - canvas_fr->GetWw();
-	  int decoration_height = canvas_height - canvas_fr->GetWh();
-	  canvas_fr->SetWindowSize(canvas_width+decoration_width, canvas_height+decoration_height);
-
-	  // preserve width/height ratio in case of resizing
-	  canvas_fr->SetFixedAspectRatio();
-	}
-
-      update();
-
-      /////////////
-      // Draw IT //
-      /////////////
 
       canvas_it->cd();
       canvas_it->SetEditable(true);
@@ -430,6 +421,20 @@ namespace sndisplay
       // Draw FR //
       /////////////
 
+      if (canvas_fr == nullptr)
+	{
+	  canvas_fr = new TCanvas (Form("%s_canvas_fr",calorimeter_name.Data()), Form("%s (FR side)",calorimeter_name.Data()), canvas_width, canvas_height);
+	  canvas_fr->SetWindowSize(canvas_width+(canvas_width-canvas_fr->GetWw()), canvas_height+(canvas_height-canvas_fr->GetWh()));
+
+	  // force canvas exact size
+	  int decoration_width = canvas_width - canvas_fr->GetWw();
+	  int decoration_height = canvas_height - canvas_fr->GetWh();
+	  canvas_fr->SetWindowSize(canvas_width+decoration_width, canvas_height+decoration_height);
+
+	  // preserve width/height ratio in case of resizing
+	  canvas_fr->SetFixedAspectRatio();
+	}
+
       canvas_fr->cd();
       canvas_fr->SetEditable(true);
       
@@ -485,8 +490,6 @@ namespace sndisplay
 
       text_was_set = false;
 
-      //
-
     }
 
     
@@ -498,14 +501,6 @@ namespace sndisplay
 	  content_text_v[omnum].Clear();
 	  ombox[omnum].SetFillColor(0);
 	}
-
-      canvas_it->Modified();
-      canvas_it->Update();
-
-      canvas_fr->Modified();
-      canvas_fr->Update();
-
-      gSystem->ProcessEvents();
     }
 
     float getcontent (int omnum)
@@ -578,8 +573,22 @@ namespace sndisplay
       setcontent(omnum, content[omnum]+value);
     }
 
-    void update ()
+    void update_canvas()
     {
+      canvas_it->Modified();
+      canvas_it->Update();
+
+      canvas_fr->Modified();
+      canvas_fr->Update();
+
+      gSystem->ProcessEvents();
+    }
+
+    void update (bool update_canvas_too=true)
+    {
+      // skip the automated color range by OM content
+      // if some OM color was set with setxxcolor()
+
       if (color_was_set)
 	{
 	  color_was_set = false;
@@ -599,10 +608,12 @@ namespace sndisplay
 	}
 
       content_min = 0;
+
       if (range_min != -1) content_min = range_min;
       if (range_max != -1) content_max = range_max;
 
-      // update colors
+      // update color box
+
       for (int omnum=0; omnum<nb_om; ++omnum)
 	{
 	  if (content[omnum] != 0)
@@ -617,6 +628,7 @@ namespace sndisplay
 	}
 
       // update content text
+
       if (draw_content && !text_was_set)
 	{
 	  for (int omnum=0; omnum<nb_om; ++omnum)
@@ -628,6 +640,8 @@ namespace sndisplay
 	    }
 	}
 
+      // update palette
+
       if (palette_axis)
 	{
 	  palette_histo->SetMinimum(content_min);
@@ -635,13 +649,10 @@ namespace sndisplay
 	  palette_histo->SetContour(100);
 	}
 
-      canvas_it->Modified();
-      canvas_it->Update();
+      //
 
-      canvas_fr->Modified();
-      canvas_fr->Update();
-
-      gSystem->ProcessEvents();
+      if (update_canvas_too)
+	update_canvas();
     }
     
     TString calorimeter_name;
@@ -904,6 +915,7 @@ namespace sndisplay
 	  cellbox[cellnum].SetFillColor(0);
 	}
 
+      canvas->cd();
       canvas->Modified();
       canvas->Update();
 
@@ -1448,6 +1460,9 @@ void sndisplay_calorimeter_test_values (bool with_palette = true)
 
   // merge IT and FR canvas side by side using image magick (if installed)
   gSystem->Exec("which convert > /dev/null && convert sndisplay-calorimeter-test-it.png sndisplay-calorimeter-test-fr.png +append sndisplay-calorimeter-test.png");
+
+  //
+  // sncalo->update();
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1586,3 +1601,5 @@ int main()
 
   return 0;
 }
+
+#endif // SNDISPLAY_CC
