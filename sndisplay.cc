@@ -569,6 +569,26 @@ namespace sndisplay
       settext(260*om_side + 13*om_column + om_row, text);
     }
     
+    void setxwcolor (int om_side, int om_wall, int om_column, int om_row, Color_t color)
+    {
+      setcolor(520 + 64*om_side + 32*om_wall + 16*om_column + om_row, color);
+    }
+
+    void setxwtext (int om_side, int om_wall, int om_column, int om_row, const char *text)
+    {
+      settext(520 + 64*om_side + 32*om_wall + 16*om_column + om_row, text);
+    }
+
+    void setgvcolor (int om_side, int om_wall, int om_column, int om_row, Color_t color)
+    {
+      setcolor(648 + 32*om_side + 16*om_wall + om_column, color);
+    }
+
+    void setgvtext (int om_side, int om_wall, int om_column, int om_row, const char *text)
+    {
+      settext(648 + 32*om_side + 16*om_wall + om_column, text);
+    }
+
     void fill (int omnum, float value=1)
     {
       setcontent(omnum, content[omnum]+value);
@@ -1461,7 +1481,6 @@ void sndisplay_calorimeter_test_values (bool with_palette = true)
 
   // merge IT and FR canvas side by side using image magick (if installed)
   gSystem->Exec("which convert > /dev/null && convert sndisplay-calorimeter-test-it.png sndisplay-calorimeter-test-fr.png +append sndisplay-calorimeter-test.png");
-
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1473,6 +1492,9 @@ void sndisplay_calorimeter_test_status ()
 {
   sndisplay::calorimeter *sncalo = new sndisplay::calorimeter ("dead_channel");
 
+  // for (int om=0; om<712; ++om)
+  //   sncalo->setcolor(om, kGreen);
+
   // OMs with "white photocathode PMT"
   sncalo->setmwcolor(0,  5, 9, kOrange+1); sncalo->setmwtext(0,  5, 9, "WP");
   sncalo->setmwcolor(0,  6, 2, kOrange+1); sncalo->setmwtext(0,  6, 2, "WP");
@@ -1481,6 +1503,15 @@ void sndisplay_calorimeter_test_status ()
   sncalo->setmwcolor(0, 10, 6, kOrange+1); sncalo->setmwtext(0, 10, 6, "WP");
   sncalo->setmwcolor(1,  9, 5, kOrange+1); sncalo->setmwtext(1,  9, 5, "WP");
   sncalo->setmwcolor(1, 15, 6, kOrange+1); sncalo->setmwtext(1, 15, 6, "WP");
+
+  // unfixable OMs
+  sncalo->setmwcolor(0, 11, 3,   kGray); sncalo->setmwtext(0, 11, 3,   "UNFX");
+  sncalo->setxwcolor(0, 1, 1, 0, kGray); sncalo->setxwtext(0, 1, 1, 0, "UNFX");
+  sncalo->setxwcolor(0, 1, 0, 3, kGray); sncalo->setxwtext(0, 1, 0, 3, "UNFX");
+
+  // new missing channels since coil installation  sncalo->setmwcolor(1, 13, 12,  kBluew); sncalo->setmwtext(1, 13, 12, "TRIP");
+  sncalo->setmwcolor(0, 0, 12,   kBlue); sncalo->setmwtext(0, 0, 12,   "MISS");
+  sncalo->setxwcolor(0, 1, 0, 2, kBlue); sncalo->setxwtext(0, 1, 0, 2, "MISS");
 
   sncalo->draw();
 
