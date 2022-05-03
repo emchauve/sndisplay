@@ -579,12 +579,12 @@ namespace sndisplay
       settext(520 + 64*om_side + 32*om_wall + 16*om_column + om_row, text);
     }
 
-    void setgvcolor (int om_side, int om_wall, int om_column, int om_row, Color_t color)
+    void setgvcolor (int om_side, int om_wall, int om_column, Color_t color)
     {
       setcolor(648 + 32*om_side + 16*om_wall + om_column, color);
     }
 
-    void setgvtext (int om_side, int om_wall, int om_column, int om_row, const char *text)
+    void setgvtext (int om_side, int om_wall, int om_column, const char *text)
     {
       settext(648 + 32*om_side + 16*om_wall + om_column, text);
     }
