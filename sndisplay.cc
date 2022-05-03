@@ -490,6 +490,7 @@ namespace sndisplay
 
       text_was_set = false;
 
+      update_canvas();
     }
 
     
