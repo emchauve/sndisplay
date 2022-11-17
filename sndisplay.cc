@@ -17,6 +17,10 @@
 
 namespace sndisplay
 {
+  ////////////////////////
+  // sndisplay::palette //
+  ////////////////////////
+
   class palette
   {
   private:
@@ -48,6 +52,28 @@ namespace sndisplay
 
   palette *palette::instance = nullptr;
 
+  ///////////////////////
+  // sndisplay::canvas //
+  ///////////////////////
+
+  // wrapper to create a TCanvas with exact width/height
+  // (taking into account OS window decorator) and with
+  // a fixed aspect ratio
+
+  TCanvas* canvas (const char *name, const char *title, int width, int height)
+  {
+    TCanvas *c = new TCanvas (name, title, width, height);
+
+    int decoration_width = width - c->GetWw();
+    int decoration_height = height - c->GetWh();
+
+    c->SetWindowSize(width+decoration_width, height+decoration_height);
+
+    c->SetFixedAspectRatio();
+
+    return c;
+  }
+
   ////////////////////////////
   // sndisplay::calorimeter //
   ////////////////////////////
@@ -55,10 +81,20 @@ namespace sndisplay
   class calorimeter
   {
   public:
-    calorimeter (const char *n = "", bool with_palette=false) : calorimeter_name (n)
+    calorimeter (const char *n = "", bool with_p=false) : calorimeter_name (n), with_palette(with_p)
     {
+      // 1 canvas mode
+      canvas = nullptr;
+
+      // 2 canvas mode
       canvas_it = nullptr;
       canvas_fr = nullptr;
+
+      pad_it = nullptr;
+      pad_fr = nullptr;
+      pad_palette = nullptr;
+      pad_palette_it = nullptr;
+      pad_palette_fr = nullptr;
 
       // draw by default the OM ID
       draw_omid = true;
@@ -71,14 +107,14 @@ namespace sndisplay
 
       range_min = range_max = -1;
 
-      const double spacerx = with_palette ? 0.0093458 : 0.0100;
+      const double spacerx = 0.01; // with_palette ? 0.0093458 : 0.0100;
       const double spacery = 0.0125;
 
       const double mw_sizey = (1-4*spacery)/(13+2);
       const double gv_sizey = mw_sizey;
       const double xw_sizey = mw_sizey*13/16.;
 
-      const double mw_sizex = with_palette ? (1-5*spacerx)/(20+4+1.5) : (1-4*spacerx)/(20+4);
+      const double mw_sizex = (1-4*spacerx)/(20+4); // with_palette ? (1-5*spacerx)/(20+4+1.5) : (1-4*spacerx)/(20+4);
       const double gv_sizex = mw_sizex*20./16.;
       const double xw_sizex = mw_sizex;
 
@@ -269,29 +305,27 @@ namespace sndisplay
       palette_histo = nullptr;
       palette_axis = nullptr;
 
-      if (with_palette)
-	{
-	  const double palette_sizey = mw_sizey*13;
-	  const double palette_sizex = mw_sizex*1.5;
+      const double palette_sizey = mw_sizey*13;
+      // const double palette_sizex = mw_sizex*1.5;
 
-	  palette_histo = new TH2D(Form("%s_palette_histo",calorimeter_name.Data()), "", 1, 0, 1, 1, 0, 1);
-	  palette_histo->GetZaxis()->SetNdivisions(509);
-	  palette_histo->GetZaxis()->SetLabelSize(0.024);
-	  palette_histo->GetZaxis()->SetLabelFont(62);
-	  palette_histo->SetMinimum(range_min);
-	  palette_histo->SetMaximum(range_max);
-	  palette_histo->SetContour(100);
+      palette_histo = new TH2D(Form("%s_palette_histo",calorimeter_name.Data()), "", 1, 0, 1, 1, 0, 1);
+      palette_histo->GetZaxis()->SetLabelSize(0.24);
+      palette_histo->GetZaxis()->SetLabelOffset(0.1);
+      palette_histo->GetZaxis()->SetNdivisions(509);
+      palette_histo->GetZaxis()->SetTickLength(0.65);
+      // palette_histo->GetZaxis()->SetLabelFont(62);
+      palette_histo->SetMinimum(range_min);
+      palette_histo->SetMaximum(range_max);
+      palette_histo->SetContour(100);
 
-	  // the constructor TPaletteAxis(x1, y1, x2, y2, histo)
-	  // crashing due to no canvas existing (gPad = nullptr)
-	  palette_axis = new TPaletteAxis;
-	  palette_axis->SetHistogram(palette_histo);
-	  palette_axis->SetX1NDC(1-spacerx-palette_sizex*(5./6)); // position tuning
-	  palette_axis->SetY1NDC(spacery+gv_sizey+spacery+palette_sizey/8.);
-	  palette_axis->SetX2NDC(1-spacerx-palette_sizex*(3./6)); // position tuning
-	  palette_axis->SetY2NDC(1-palette_axis->GetY1NDC());
-	  palette_axis->SetY2NDC(1-palette_axis->GetY1NDC());
-	}
+      // the constructor TPaletteAxis(x1, y1, x2, y2, histo)
+      // crashing due to no canvas existing (gPad = nullptr)
+      palette_axis = new TPaletteAxis;
+      palette_axis->SetHistogram(palette_histo);
+      palette_axis->SetX1NDC(0.1); // 1-spacerx-palette_sizex*(5./6)); // position tuning
+      palette_axis->SetY1NDC(spacery+gv_sizey+spacery+palette_sizey/8.);
+      palette_axis->SetX2NDC(0.5); //1-spacerx-palette_sizex*(3./6)); // position tuning
+      palette_axis->SetY2NDC(1-palette_axis->GetY1NDC());
 
     }; // calorimeter()
 
@@ -313,59 +347,143 @@ namespace sndisplay
 
     static const int nb_om  = 712;
 
-    enum {
-      AUTO,
-      FULL,
-      FULL_ITALY,
-      FULL_FRANCE,
-      MW_ITALY,
-      MW_FRANCE,
-      XW_MOUNTAIN,
-      XW_TUNNEL};
-
     void setrange(float zmin, float zmax) 
     {
       range_min = zmin; range_max = zmax;
     }
 
-    void draw_omid_label (bool draw=true) {
-      draw_omid = draw;}
-
-    void draw_omnum_label(bool draw=true) {
-      draw_omnum = draw;}
- 
-    void draw_content_label(const char *format="%.0f") {
-      draw_content_format = TString(format);
-      draw_content = true;}
-
-    void draw()
+    void draw_omid_label (bool draw=true)
     {
-      const int canvas_width  = palette_axis ? 1284 : 1200;
+      draw_omid = draw;
+    }
+
+    void draw_omnum_label(bool draw=true)
+    {
+      draw_omnum = draw;
+    }
+ 
+    void draw_content_label(const char *format="%.0f")
+    {
+      draw_content_format = TString(format);
+      draw_content = true;
+    }
+
+    // draw in 1 canvas mode
+    void draw1()
+    {
+      if (pad_palette_fr != nullptr) {delete pad_palette_fr; pad_palette_fr = nullptr;}
+      if (pad_palette_it != nullptr) {delete pad_palette_it; pad_palette_it = nullptr;}
+      if (pad_palette != nullptr) {delete pad_palette; pad_palette = nullptr;}
+      if (pad_fr != nullptr) {delete pad_fr; pad_it = nullptr;}
+      if (pad_it != nullptr) {delete pad_it; pad_it = nullptr;}
+      if (canvas_fr != nullptr) {delete canvas_fr; canvas_fr = nullptr;}
+      if (canvas_it != nullptr) {delete canvas_it; canvas_it = nullptr;}
+      if (canvas != nullptr) {delete canvas; canvas = nullptr;}
+
+      const int calorimeter_width = 1200;
+      const int palette_width = 42;
+
+      const int canvas_width  = with_palette ? (calorimeter_width + palette_width) : calorimeter_width;
+      const int canvas_height = 390;
+
+      canvas = sndisplay::canvas(Form("%s_canvas",calorimeter_name.Data()), Form("%s",calorimeter_name.Data()), canvas_width, canvas_height);
+
+      if (with_palette)
+	{
+	  const double palette_rwidth = ((double)(palette_width))/((double)(canvas_width));
+	  const double pad_x1 = 0.5 - palette_rwidth/2;
+	  const double pad_x2 = 1.0 - palette_rwidth;
+
+	  pad_it = new TPad (Form("%s_pad_it",calorimeter_name.Data()), Form("%s it",calorimeter_name.Data()), 0, 0, pad_x1, 1);
+	  pad_fr = new TPad (Form("%s_pad_fr",calorimeter_name.Data()), Form("%s fr",calorimeter_name.Data()), pad_x1, 0, pad_x2, 1);
+	  pad_palette = new TPad (Form("%s_pad_palette",calorimeter_name.Data()), Form("%s palette",calorimeter_name.Data()), pad_x2, 0, 1, 1);
+	}
+      else
+	{
+	  pad_it = new TPad (Form("%s_pad_it",calorimeter_name.Data()), Form("%s it",calorimeter_name.Data()), 0, 0, 0.5, 1);
+	  pad_fr = new TPad (Form("%s_pad_fr",calorimeter_name.Data()), Form("%s fr",calorimeter_name.Data()), 0.5, 0, 1, 1);
+	}
+
+      canvas->cd();
+      pad_it->Draw();
+      pad_fr->Draw();
+
+      draw_internal_content();
+
+      if (with_palette)
+	{
+	  canvas->cd();
+	  pad_palette->Draw();
+	  pad_palette->cd();
+	  palette_axis->Draw();
+	}
+
+      canvas->SetEditable(false);
+    }
+
+    // draw in 2 canvas mode
+    void draw2()
+    {
+      if (pad_palette_fr != nullptr) {delete pad_palette_fr; pad_palette_fr = nullptr;}
+      if (pad_palette_it != nullptr) {delete pad_palette_it; pad_palette_it = nullptr;}
+      if (pad_palette != nullptr) {delete pad_palette; pad_palette = nullptr;}
+      if (pad_fr != nullptr) {delete pad_fr; pad_it = nullptr;}
+      if (pad_it != nullptr) {delete pad_it; pad_it = nullptr;}
+      if (canvas_fr != nullptr) {delete canvas_fr; canvas_fr = nullptr;}
+      if (canvas_it != nullptr) {delete canvas_it; canvas_it = nullptr;}
+      if (canvas != nullptr) {delete canvas; canvas = nullptr;}
+
+      const int calorimeter_width = 1200;
+      const int palette_width = 84;
+
+      const int canvas_width  = with_palette ? (calorimeter_width + palette_width) : calorimeter_width;
       const int canvas_height = 780;
 
-      // update color and content
+      const double pad_xmax = with_palette ? ((double)(calorimeter_width))/((double)(canvas_width)) : 1;
 
+      canvas_it = sndisplay::canvas (Form("%s_canvas_it",calorimeter_name.Data()), Form("%s (IT side)",calorimeter_name.Data()), canvas_width, canvas_height);
+      pad_it = new TPad (Form("%s_pad_it",calorimeter_name.Data()), Form("%s it",calorimeter_name.Data()), 0, 0, pad_xmax, 1);
+      pad_it->Draw();
+
+      canvas_fr = sndisplay::canvas (Form("%s_canvas_fr",calorimeter_name.Data()), Form("%s (FR side)",calorimeter_name.Data()), canvas_width, canvas_height);
+      pad_fr = new TPad (Form("%s_pad_fr",calorimeter_name.Data()), Form("%s fr",calorimeter_name.Data()), 0, 0, pad_xmax, 1);
+      pad_fr->Draw();
+
+      if (with_palette)
+	{
+	  pad_palette_it = new TPad (Form("%s_pad_palette_it",calorimeter_name.Data()), Form("%s palette it",calorimeter_name.Data()), pad_xmax, 0, 1, 1);
+	  pad_palette_fr = new TPad (Form("%s_pad_palette_fr",calorimeter_name.Data()), Form("%s palette fr",calorimeter_name.Data()), pad_xmax, 0, 1, 1);
+	}
+
+      draw_internal_content();
+
+      if (with_palette)
+	{
+	  canvas_it->cd();
+	  pad_palette_it->Draw();
+	  pad_palette_it->cd();
+	  palette_axis->Draw();
+
+	  canvas_fr->cd();
+	  pad_palette_fr->Draw();
+	  pad_palette_fr->cd();
+	  palette_axis->Draw();
+	}
+
+      canvas_it->SetEditable(false);
+      canvas_fr->SetEditable(false);
+    }
+
+    void draw_internal_content()
+    {
+      // update color and content
       update(false);
 
       /////////////
       // Draw IT //
       /////////////
 
-      if (canvas_it == nullptr)
-	{
-	  canvas_it = new TCanvas (Form("%s_canvas_it",calorimeter_name.Data()), Form("%s (IT side)",calorimeter_name.Data()), canvas_width, canvas_height);
-
-	  // force canvas exact size
-	  int decoration_width = canvas_width - canvas_it->GetWw();
-	  int decoration_height = canvas_height - canvas_it->GetWh();
-	  canvas_it->SetWindowSize(canvas_width+decoration_width, canvas_height+decoration_height);
-
-	  // preserve width/height ratio in case of resizing
-	  canvas_it->SetFixedAspectRatio();
-	}
-
-      canvas_it->cd();
-      canvas_it->SetEditable(true);
+      pad_it->cd();
       
       int mw_side=0;
       for (int mw_column=0; mw_column<20; ++mw_column) {
@@ -413,30 +531,11 @@ namespace sndisplay
 
       label_it->Draw();
 
-      if (palette_axis) palette_axis->Draw();
-
-      canvas_it->SetEditable(false);
-
       /////////////
       // Draw FR //
       /////////////
 
-      if (canvas_fr == nullptr)
-	{
-	  canvas_fr = new TCanvas (Form("%s_canvas_fr",calorimeter_name.Data()), Form("%s (FR side)",calorimeter_name.Data()), canvas_width, canvas_height);
-	  canvas_fr->SetWindowSize(canvas_width+(canvas_width-canvas_fr->GetWw()), canvas_height+(canvas_height-canvas_fr->GetWh()));
-
-	  // force canvas exact size
-	  int decoration_width = canvas_width - canvas_fr->GetWw();
-	  int decoration_height = canvas_height - canvas_fr->GetWh();
-	  canvas_fr->SetWindowSize(canvas_width+decoration_width, canvas_height+decoration_height);
-
-	  // preserve width/height ratio in case of resizing
-	  canvas_fr->SetFixedAspectRatio();
-	}
-
-      canvas_fr->cd();
-      canvas_fr->SetEditable(true);
+      pad_fr->cd();
       
       mw_side=1;
       for (int mw_column=0; mw_column<20; ++mw_column) {
@@ -484,16 +583,28 @@ namespace sndisplay
 
       label_fr->Draw();
 
-      if (palette_axis) palette_axis->Draw();
-
-      canvas_fr->SetEditable(false);
-
       text_was_set = false;
 
       update_canvas();
     }
 
-    
+    void draw()
+    {
+      draw2();
+    }
+
+    void palette (bool with_p=true)
+    {
+      if (with_palette == with_p)
+	return; // do nothing
+
+      with_palette = with_p;
+
+      if (canvas != nullptr) draw1();
+      else if (canvas_it != nullptr) draw2();
+      else draw1();
+    }
+
     void reset()
     {
       for (int omnum=0; omnum<nb_om; ++omnum)
@@ -596,11 +707,23 @@ namespace sndisplay
 
     void update_canvas()
     {
-      canvas_it->Modified();
-      canvas_it->Update();
+      if (canvas != nullptr)
+	{
+	  canvas->Modified();
+	  canvas->Update();
+	}
 
-      canvas_fr->Modified();
-      canvas_fr->Update();
+      if (canvas_it != nullptr)
+	{
+	  canvas_it->Modified();
+	  canvas_it->Update();
+	}
+
+      if (canvas_fr != nullptr)
+	{
+	  canvas_fr->Modified();
+	  canvas_fr->Update();
+	}
 
       gSystem->ProcessEvents();
     }
@@ -679,6 +802,7 @@ namespace sndisplay
     TString calorimeter_name;
 
     // draw options
+    bool with_palette;
     bool draw_omid;
     bool draw_omnum;
     bool draw_content;
@@ -687,9 +811,16 @@ namespace sndisplay
 
     bool color_was_set;
     bool text_was_set;
-    
+
+    TCanvas *canvas;
     TCanvas *canvas_it;
     TCanvas *canvas_fr;
+
+    TPad *pad_it;
+    TPad *pad_fr;
+    TPad *pad_palette;
+    TPad *pad_palette_it;
+    TPad *pad_palette_fr;
 
     TText *label_it;
     TText *label_fr;
@@ -1455,9 +1586,11 @@ namespace sndisplay
 // sndisplay_calorimeter_test_values()
 // => sndisplay::calorimeter usage by filling OMs content with random value
 
+sndisplay::calorimeter *sncalo = nullptr;
+
 void sndisplay_calorimeter_test_values (bool with_palette = true)
 {
-  sndisplay::calorimeter *sncalo = new sndisplay::calorimeter ("sndiplay_test", with_palette);
+  sncalo = new sndisplay::calorimeter ("sndiplay_test", with_palette);
 
   sncalo->draw_content_label("%.1f");
 
@@ -1529,7 +1662,7 @@ void sndisplay_calorimeter_test_status ()
 
 void sndisplay_calorimeter_test_omnum ()
 {
-  sndisplay::calorimeter *sncalo = new sndisplay::calorimeter ("omid_vs_omnum");
+  sncalo = new sndisplay::calorimeter ("omid_vs_omnum");
 
   for (int omnum=0; omnum<712; ++omnum)
     sncalo->settext(omnum, Form("%d", omnum));
@@ -1619,17 +1752,17 @@ void sndisplay_demonstrator_test ()
 // main() can be compiled with (ROOT's HistPainter library must be added!)
 // g++ sndisplay.cc -o sndisplay `root-config --cflags --libs` -lHistPainter
 
-int main()
-{
-  sndisplay_calorimeter_test_values();
-  sndisplay_calorimeter_test_status();
-  sndisplay_calorimeter_test_omnum();
+// int main()
+// {
+//   sndisplay_calorimeter_test_values();
+//   sndisplay_calorimeter_test_status();
+//   sndisplay_calorimeter_test_omnum();
 
-  sndisplay_tracker_test();
+//   sndisplay_tracker_test();
 
-  sndisplay_demonstrator_test();
+//   sndisplay_demonstrator_test();
 
-  return 0;
-}
+//   return 0;
+// }
 
 #endif // SNDISPLAY_CC
