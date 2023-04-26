@@ -1318,9 +1318,10 @@ namespace sndisplay
 
 	  for (int gg_row=0; gg_row<113; ++gg_row) {
 
+	    double x1 = spacerx + xw_sizex + gg_row*gg_sizex;
+
 	    for (int gg_layer=0; gg_layer<9; ++gg_layer)
 	      {
-		double x1 = spacerx + xw_sizex + gg_row*gg_sizex;
 		double y1 = spacery + mw_sizey;
 
 		if (gg_side == 0)
@@ -1342,9 +1343,33 @@ namespace sndisplay
 		ellipse->SetFillColor(0);
 		ellipse->SetLineWidth(1);
 		top_gg_ellipse.push_back(ellipse);
-	      }
-	  }
-      }
+
+	      } // for (gg_layer)
+
+	    // if ((gg_row % 10) == 0)
+	    //   {
+	    // 	TText row_text (x1+0.5*gg_sizex, spacery + mw_sizey + 9*gg_sizey + se_sizey/2, Form("%d",gg_row));
+	    // 	row_text.SetTextSize(0.02);
+	    // 	// row_text.SetTextAngle(90);
+	    // 	row_text.SetTextAlign(22);
+	    // 	top_gg_row_text_v.push_back(row_text);
+	    //   }
+
+	  } // for (gg_row)
+
+      } // for (gg_side)
+
+      const double source_row_t[6] = {8.5, 27.5, 46.5, 65.5, 84.5, 103.5};
+
+      for (int source=0; source<6; source++)
+	{
+	  double x1 = spacerx + xw_sizex + source_row_t[source]*gg_sizex;
+
+	  TText row_text (x1+0.5*gg_sizex, spacery + mw_sizey + 9*gg_sizey + se_sizey/2, "o");
+	  row_text.SetTextSize(0.03);
+	  row_text.SetTextAlign(22);
+	  top_gg_row_text_v.push_back(row_text);
+	}
 
       title = new TText (spacerx, 1-title_sizey*3/4, "");
       title->SetTextSize(0.056);
@@ -1416,6 +1441,9 @@ namespace sndisplay
 		}
 	    }
 	}
+
+      for (TText & top_gg_row_text : top_gg_row_text_v)
+	top_gg_row_text.Draw();
 
       title->Draw();
 
@@ -1575,7 +1603,8 @@ namespace sndisplay
     std::vector<float> top_gg_content;
     std::vector<TBox*> top_gg_box;
     std::vector<TEllipse*> top_gg_ellipse;
-    // std::vector<TText*>  top_gg_text;
+    std::vector<TText> top_gg_row_text_v;
+
 
   }; // sndisplay::demonstrator class
 
