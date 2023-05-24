@@ -380,11 +380,15 @@ namespace sndisplay
       if (canvas_it != nullptr) {delete canvas_it; canvas_it = nullptr;}
       if (canvas != nullptr) {delete canvas; canvas = nullptr;}
 
-      const int calorimeter_width = 1200;
-      const int palette_width = 42;
+      //   600+600 = 1200 x 390 ( + 42 x 390)
+      //   900+900 = 1800 x 585 ( + 63 x 585)
+      // 1200+1200 = 2400 x 780 ( + 84 x 780)
+
+      const int calorimeter_width = 1800;
+      const int palette_width = 63;
 
       const int canvas_width  = with_palette ? (calorimeter_width + palette_width) : calorimeter_width;
-      const int canvas_height = 390;
+      const int canvas_height = 585;
 
       canvas = sndisplay::canvas(Form("%s_canvas",calorimeter_name.Data()), Form("%s",calorimeter_name.Data()), canvas_width, canvas_height);
 
