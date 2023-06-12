@@ -347,7 +347,7 @@ namespace sndisplay
 
     static const int nb_om  = 712;
 
-    void setrange(float zmin, float zmax) 
+    void setrange(double zmin, double zmax)
     {
       range_min = zmin; range_max = zmax;
     }
@@ -619,19 +619,19 @@ namespace sndisplay
 	}
     }
 
-    float getcontent (int omnum)
+    double getcontent (int omnum)
     {
       return content[omnum];
     }
 
-    void setcontent (int omnum, float value)
+    void setcontent (int omnum, double value)
     {
       if ((omnum >= 0) && (omnum < nb_om))
 	content[omnum] = value;
       else printf("*** wrong OM NUM\n");
     }
     
-    void setcontent (int om_side, int om_wall, int om_column, int om_row, float value)
+    void setcontent (int om_side, int om_wall, int om_column, int om_row, double value)
     {
       int omnum = -1;
 
@@ -704,7 +704,7 @@ namespace sndisplay
       settext(648 + 32*om_side + 16*om_wall + om_column, text);
     }
 
-    void fill (int omnum, float value=1)
+    void fill (int omnum, double value=1)
     {
       setcontent(omnum, content[omnum]+value);
     }
@@ -746,8 +746,8 @@ namespace sndisplay
       // autoset Z range [0, content_max]
       // unless setrange() has been called
 
-      float content_min = content[0];
-      float content_max = content[0];
+      double content_min = content[0];
+      double content_max = content[0];
 
       for (int omnum=1; omnum<nb_om; ++omnum)
 	{
@@ -811,7 +811,7 @@ namespace sndisplay
     bool draw_omnum;
     bool draw_content;
     TString draw_content_format;
-    float range_min, range_max;
+    double range_min, range_max;
 
     bool color_was_set;
     bool text_was_set;
@@ -832,7 +832,7 @@ namespace sndisplay
     TH2D *palette_histo;
     TPaletteAxis *palette_axis;
 
-    std::vector<float> content;
+    std::vector<double> content;
 
     std::vector<TBox>  ombox;
     std::vector<TText> omid_text_v;
@@ -980,7 +980,7 @@ namespace sndisplay
 
     static const int nb_cell  = 2034;
 
-    void setrange(float zmin, float zmax) 
+    void setrange(double zmin, double zmax)
     {
       range_min = zmin; range_max = zmax;
     }
@@ -1072,18 +1072,18 @@ namespace sndisplay
 	}
     }
 
-    float getcontent (int cellnum)
+    double getcontent (int cellnum)
     {
       return content[cellnum];
     }
 
-    void setcontent (int cellnum, float value)
+    void setcontent (int cellnum, double value)
     {
       if (cellnum < nb_cell) content[cellnum] = value;
       else printf("*** wrong cell ID\n");
     }
 
-    void setcontent (int cell_side, int cell_row, int cell_layer, float value)
+    void setcontent (int cell_side, int cell_row, int cell_layer, double value)
     {
       int cellnum = cell_side*9*113 + cell_row*9 + cell_layer;
       setcontent(cellnum, value);
@@ -1121,7 +1121,7 @@ namespace sndisplay
       settext(cell_num, text);
     }
 
-    void fill (int cellnum, float value=1)
+    void fill (int cellnum, double value=1)
     {
       setcontent(cellnum, content[cellnum]+value);
     }
@@ -1146,8 +1146,8 @@ namespace sndisplay
       // autoset Z range [0, content_max]
       // unless setrange() has been called
 
-      float content_min = content[0];
-      float content_max = content[0];
+      double content_min = content[0];
+      double content_max = content[0];
 
       for (int cellnum=1; cellnum<nb_cell; ++cellnum)
 	{
@@ -1190,7 +1190,7 @@ namespace sndisplay
     bool draw_cellnum;
     bool draw_content;
     TString draw_content_format;
-    float range_min, range_max;
+    double range_min, range_max;
 
     bool color_was_set;
     bool text_was_set;
@@ -1205,7 +1205,7 @@ namespace sndisplay
     TH2D *palette_histo;
     TPaletteAxis *palette_axis;
 
-    std::vector<float> content;
+    std::vector<double> content;
 
     std::vector<TBox>  cellbox;
     std::vector<TText> cellid_text_v;
@@ -1382,7 +1382,7 @@ namespace sndisplay
     } // demonstrator ()
 
 
-    void setrange(float zmin, float zmax) 
+    void setrange(double zmin, double zmax)
     {
       range_min = zmin; range_max = zmax;
     }
@@ -1453,7 +1453,7 @@ namespace sndisplay
 
     } // draw_top
 
-    void setomcontent (int om_num, float value)
+    void setomcontent (int om_num, double value)
     {
       int top_om_num = -1;
       
@@ -1481,18 +1481,18 @@ namespace sndisplay
     }
 
 
-    void setggcontent (int cell_num, float value)
+    void setggcontent (int cell_num, double value)
     {
       if (cell_num < 2034) top_gg_content[cell_num] = value;
       else printf("*** wrong cell ID\n");
     }
 
-    float getggcontent (int cell_num)
+    double getggcontent (int cell_num)
     {
       return top_gg_content[cell_num];
     }
     
-    void setggcontent (int cell_side, int cell_row, int cell_layer, float value)
+    void setggcontent (int cell_side, int cell_row, int cell_layer, double value)
     {
       int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
       setggcontent(cell_num, value);
@@ -1508,6 +1508,14 @@ namespace sndisplay
     {
       int cell_num = cell_side*9*113 + cell_row*9 + cell_layer;
       setggcolor(cell_num, color);
+    }
+
+    int getggcolorindex (double value)
+    {
+      int color_index = floor (99*(value-range_min)/(range_max-range_min));
+      if (color_index < 0) color_index = 0;
+      else if (color_index >= 100) color_index = 99;
+      return palette::get_index() + color_index;
     }
 
     void settitle (const char *text)
@@ -1541,8 +1549,8 @@ namespace sndisplay
 
     void update (bool update_canvas_too=true)
     {
-      float top_content_min = top_om_content[0];
-      float top_content_max = top_om_content[0];
+      double top_content_min = top_om_content[0];
+      double top_content_max = top_om_content[0];
 
       for (size_t om=0; om<top_om_content.size(); ++om)
     	{
@@ -1598,13 +1606,13 @@ namespace sndisplay
     TCanvas *canvas;
     TText *title;
 
-    float range_min, range_max;
+    double range_min, range_max;
     
-    std::vector<float> top_om_content;
+    std::vector<double> top_om_content;
     std::vector<TBox*> top_om_box;
     std::vector<TText*> top_om_text;
 
-    std::vector<float> top_gg_content;
+    std::vector<double> top_gg_content;
     std::vector<TBox*> top_gg_box;
     std::vector<TEllipse*> top_gg_ellipse;
     std::vector<TText> top_gg_row_text_v;
@@ -1736,11 +1744,11 @@ void sndisplay_demonstrator_test ()
 {
   sndisplay::demonstrator *sndemonstrator = new sndisplay::demonstrator ("demonstrator_test");
 
-  const float anode_and_two_cathodes  = 1;
-  const float anode_and_one_cathode   = 0.85;
-  const float anode_and_no_cathode    = 0.7;
-  const float two_cathodes_only       = 0.5;
-  const float one_cathode_only        = 0.2;
+  const double anode_and_two_cathodes  = 1;
+  const double anode_and_one_cathode   = 0.85;
+  const double anode_and_no_cathode    = 0.7;
+  const double two_cathodes_only       = 0.5;
+  const double one_cathode_only        = 0.2;
 
   sndemonstrator->setomcontent(23,  1.0); // M:0.1.10 => 260*0 + 13*1 + 10 = 23
   sndemonstrator->setomcontent(276, 1.0); // M:1.1.2  => 260*1 + 13*1 + 3  = 276
